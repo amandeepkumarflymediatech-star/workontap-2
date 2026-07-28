@@ -376,7 +376,7 @@ export async function POST(request, { params }) {
             try {
               const transfer = await stripe.transfers.create({
                 amount:             providerCents,
-                currency:           'gbp',
+                currency:           process.env.STRIPE_CURRENCY || 'cad',
                 destination:        booking.stripe_account_id,
                 source_transaction: latestCharge,
                 metadata: {

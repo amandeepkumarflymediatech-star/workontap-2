@@ -52,7 +52,7 @@ export async function GET(request) {
       if (providerAmountCents > 0 && booking.stripe_account_id) {
         await stripe.transfers.create({
           amount: providerAmountCents,
-          currency: 'gbp',
+          currency: process.env.STRIPE_CURRENCY || 'cad',
           destination: booking.stripe_account_id,
           transfer_group: `booking_${booking.id}`,
           metadata: {
