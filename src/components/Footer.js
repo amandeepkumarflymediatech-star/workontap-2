@@ -153,7 +153,7 @@ export default function Footer() {
                 </div>
                 <div className="pt-1">
                   <p className="font-semibold text-gray-800 mb-1">Our Location</p>
-                  <p>London, UK</p>
+                  <p>Canada</p>
                 </div>
               </li>
             </ul>
@@ -161,7 +161,7 @@ export default function Footer() {
             {/* Map */}
             <div className="rounded-2xl overflow-hidden border border-gray-200 h-40 w-full shadow-inner lg:max-w-md">
               <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2483.690857182831!2d-0.12255!3d51.50335!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x487604b900d26973%3A0x4291f3172409ea92!2sLondon%20Eye!5e0!3m2!1sen!2suk!4v1700000000000"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d43063249.440171145!2d-135.61748256832774!3d48.79387538349063!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4b0d03d337cc6ad9%3A0x9968b72aa2438fa5!2sCanada!5e0!3m2!1sen!2sus!4v1785309801978!5m2!1sen!2sus"
                 width="100%"
                 height="100%"
                 style={{ border: 0 }}

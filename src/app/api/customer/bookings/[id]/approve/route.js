@@ -62,7 +62,7 @@ function receiptHtml({ bookingNumber, serviceName, customerName, providerName, a
     </table>
   </td></tr>
   <tr><td style="padding:24px 0;text-align:center;">
-    <p style="margin:0;font-size:13px;color:#94a3b8;">© ${new Date().getFullYear()} WorkOnTap · London, UK</p>
+    <p style="margin:0;font-size:13px;color:#94a3b8;">© ${new Date().getFullYear()} WorkOnTap · Canada</p>
   </td></tr>
 </table></body></html>`
 }
