@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useAdminTheme } from '../layout'
 import Icon from '@/components/Icon';
 import dynamic from 'next/dynamic';
+import { FiSearch, FiFilter, FiChevronDown, FiX } from 'react-icons/fi'
 
 const RichTextEditor = dynamic(() => import('@/components/RichTextEditor'), { ssr: false });
 
@@ -15,6 +16,10 @@ export default function Services() {
   const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedCategory, setSelectedCategory] = useState('all')
+  const [searchTerm, setSearchTerm] = useState('')
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [sortBy, setSortBy] = useState('newest')
+  const [showMobileFilters, setShowMobileFilters] = useState(false)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [selectedService, setSelectedService] = useState(null)
@@ -182,10 +187,53 @@ export default function Services() {
   // Helper
   const isActive = (service) => service.is_active === 1 || service.is_active === true
 
-  // Filter — category only
-  const filteredServices = services.filter(service =>
-    selectedCategory === 'all' || String(service.category_id) === String(selectedCategory)
-  )
+  // Multi-criteria filter & sort
+  const filteredServices = services
+    .filter(service => {
+      // Category filter
+      if (selectedCategory !== 'all' && String(service.category_id) !== String(selectedCategory)) {
+        return false
+      }
+      // Status & Feature filter
+      if (statusFilter === 'active' && !isActive(service)) return false
+      if (statusFilter === 'inactive' && isActive(service)) return false
+      if (statusFilter === 'homepage' && !service.is_homepage) return false
+      if (statusFilter === 'trending' && !service.is_trending) return false
+      if (statusFilter === 'popular' && !service.is_popular) return false
+
+      // Search term filter
+      if (searchTerm.trim() !== '') {
+        const query = searchTerm.toLowerCase().trim()
+        const matchName = service.name?.toLowerCase().includes(query)
+        const matchCat = service.category_name?.toLowerCase().includes(query)
+        const matchDesc = service.short_description?.toLowerCase().includes(query) || service.description?.toLowerCase().includes(query)
+        const matchSlug = service.slug?.toLowerCase().includes(query)
+        const matchPrice = String(service.base_price || '').includes(query)
+        if (!matchName && !matchCat && !matchDesc && !matchSlug && !matchPrice) {
+          return false
+        }
+      }
+      return true
+    })
+    .sort((a, b) => {
+      if (sortBy === 'name_asc') return (a.name || '').localeCompare(b.name || '')
+      if (sortBy === 'name_desc') return (b.name || '').localeCompare(a.name || '')
+      if (sortBy === 'price_high') return parseFloat(b.base_price || 0) - parseFloat(a.base_price || 0)
+      if (sortBy === 'price_low') return parseFloat(a.base_price || 0) - parseFloat(b.base_price || 0)
+      if (sortBy === 'duration_desc') return (b.duration_minutes || 0) - (a.duration_minutes || 0)
+      if (sortBy === 'oldest') return (a.id || 0) - (b.id || 0)
+      return (b.id || 0) - (a.id || 0)
+    })
+
+  const hasActiveFilters = searchTerm !== '' || selectedCategory !== 'all' || statusFilter !== 'all' || sortBy !== 'newest'
+
+  const clearAllFilters = () => {
+    setSearchTerm('')
+    setSelectedCategory('all')
+    setStatusFilter('all')
+    setSortBy('newest')
+    setCurrentPage(1)
+  }
 
   // Pagination
   const totalPages = Math.ceil(filteredServices.length / itemsPerPage)
@@ -242,19 +290,137 @@ export default function Services() {
         </button>
       </div>
 
-      {/* Filter */}
-      <div className="mb-6 flex items-center gap-4">
-        <select
-          value={selectedCategory}
-          onChange={(e) => { setSelectedCategory(e.target.value); setCurrentPage(1) }}
-          className={`px-4 py-2 rounded-lg border text-sm font-medium ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-white border-gray-300 text-gray-900'} focus:outline-none focus:ring-2 focus:ring-teal-500`}
-        >
-          <option value="all">All Categories</option>
-          {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-        </select>
-        <span className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-gray-500'}`}>
-          {filteredServices.length} {filteredServices.length === 1 ? 'service' : 'services'}
-        </span>
+      {/* Filter and Search Bar */}
+      <div className={`p-4 sm:p-5 rounded-2xl border mb-6 transition-all shadow-sm ${
+        isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'
+      }`}>
+        {/* Top Row: Search Input & Mobile Filter Toggle */}
+        <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 mb-3">
+          {/* Search Bar */}
+          <div className="relative flex-1">
+            <input
+              type="text"
+              placeholder="Search services by name, category, description, slug, or price..."
+              value={searchTerm}
+              onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1) }}
+              className={`w-full pl-10 ${searchTerm ? 'pr-9' : 'pr-4'} py-2.5 rounded-xl text-xs sm:text-sm border focus:outline-none focus:ring-2 focus:ring-teal-500 transition ${
+                isDarkMode
+                  ? 'bg-slate-800 border-slate-700 text-white placeholder-slate-400'
+                  : 'bg-slate-50 border-gray-200 text-gray-900 placeholder-gray-400'
+              }`}
+            />
+            <FiSearch className={`w-4 h-4 absolute left-3.5 top-3.5 ${isDarkMode ? 'text-slate-400' : 'text-gray-400'}`} />
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={() => { setSearchTerm(''); setCurrentPage(1) }}
+                className={`absolute right-3 top-3 text-xs p-0.5 rounded-full ${
+                  isDarkMode ? 'text-slate-400 hover:text-white' : 'text-gray-400 hover:text-gray-600'
+                }`}
+              >
+                <FiX className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+
+          {/* Category Dropdown */}
+          <div className="w-full lg:w-56">
+            <select
+              value={selectedCategory}
+              onChange={(e) => { setSelectedCategory(e.target.value); setCurrentPage(1) }}
+              className={`w-full px-3 py-2.5 rounded-xl text-xs sm:text-sm border focus:outline-none focus:ring-2 focus:ring-teal-500 transition ${
+                isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-gray-200 text-gray-900'
+              }`}
+            >
+              <option value="all">All Categories ({categories.length})</option>
+              {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+          </div>
+
+          {/* Sort By Dropdown */}
+          <div className="w-full lg:w-56">
+            <select
+              value={sortBy}
+              onChange={(e) => { setSortBy(e.target.value); setCurrentPage(1) }}
+              className={`w-full px-3 py-2.5 rounded-xl text-xs sm:text-sm border focus:outline-none focus:ring-2 focus:ring-teal-500 transition ${
+                isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-gray-200 text-gray-900'
+              }`}
+            >
+              <option value="newest">📅 Newest First</option>
+              <option value="oldest">📅 Oldest First</option>
+              <option value="name_asc">🔤 Name (A - Z)</option>
+              <option value="name_desc">🔤 Name (Z - A)</option>
+              <option value="price_high">💵 Price: High to Low</option>
+              <option value="price_low">💵 Price: Low to High</option>
+              <option value="duration_desc">⏱️ Duration: Longest First</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Status & Feature Filter Pills */}
+        <div className="overflow-x-auto pb-1 -mx-1 px-1 lg:mx-0 lg:px-0 scrollbar-hide flex items-center justify-between gap-3">
+          <div className="flex items-center gap-1.5 flex-nowrap">
+            {[
+              { id: 'all', label: 'All Services' },
+              { id: 'active', label: '🟢 Active' },
+              { id: 'inactive', label: '⚪ Inactive' },
+              { id: 'homepage', label: '🏠 Homepage' },
+              { id: 'trending', label: '🔥 Trending' },
+              { id: 'popular', label: '⭐ Popular' },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => { setStatusFilter(tab.id); setCurrentPage(1) }}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition ${
+                  statusFilter === tab.id
+                    ? 'bg-teal-500 text-white shadow-sm'
+                    : isDarkMode
+                      ? 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          <span className={`text-xs whitespace-nowrap font-medium ${isDarkMode ? 'text-slate-400' : 'text-gray-500'}`}>
+            Showing {filteredServices.length} {filteredServices.length === 1 ? 'service' : 'services'}
+          </span>
+        </div>
+
+        {/* Active Badges & Reset Bar */}
+        {hasActiveFilters && (
+          <div className="flex items-center justify-between gap-3 mt-3 pt-3 border-t border-dashed dark:border-slate-800 border-gray-200 flex-wrap text-xs">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className={`font-semibold ${isDarkMode ? 'text-slate-400' : 'text-gray-500'}`}>Active Filters:</span>
+              {searchTerm && (
+                <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${isDarkMode ? 'bg-slate-800 text-teal-400 border border-slate-700' : 'bg-teal-50 text-teal-700 border border-teal-200'}`}>
+                  Search: &quot;{searchTerm}&quot; <button onClick={() => setSearchTerm('')}><FiX className="w-3 h-3" /></button>
+                </span>
+              )}
+              {selectedCategory !== 'all' && (
+                <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${isDarkMode ? 'bg-slate-800 text-teal-400 border border-slate-700' : 'bg-teal-50 text-teal-700 border border-teal-200'}`}>
+                  Category: {categories.find(c => String(c.id) === String(selectedCategory))?.name || selectedCategory} <button onClick={() => setSelectedCategory('all')}><FiX className="w-3 h-3" /></button>
+                </span>
+              )}
+              {statusFilter !== 'all' && (
+                <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${isDarkMode ? 'bg-slate-800 text-teal-400 border border-slate-700' : 'bg-teal-50 text-teal-700 border border-teal-200'}`}>
+                  Filter: {statusFilter} <button onClick={() => setStatusFilter('all')}><FiX className="w-3 h-3" /></button>
+                </span>
+              )}
+              {sortBy !== 'newest' && (
+                <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${isDarkMode ? 'bg-slate-800 text-teal-400 border border-slate-700' : 'bg-teal-50 text-teal-700 border border-teal-200'}`}>
+                  Sort: {sortBy} <button onClick={() => setSortBy('newest')}><FiX className="w-3 h-3" /></button>
+                </span>
+              )}
+            </div>
+            <button onClick={clearAllFilters} className="text-red-600 dark:text-red-400 hover:underline font-semibold">
+              Clear All Filters
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Services Grid */}

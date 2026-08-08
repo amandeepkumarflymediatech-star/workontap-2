@@ -159,9 +159,13 @@ export default function ServiceDetailPage({ params }) {
             </div>
 
             {service.description && (
-              <div className="bg-[#16A34A]/5 rounded-2xl p-6 md:p-8 mb-8 border border-[#16A34A]/10">
+              <div className="bg-white rounded-2xl p-6 md:p-8 mb-8 border border-gray-200/80 shadow-sm hover:shadow-md transition-shadow">
+                <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center border-b border-gray-100 pb-3">
+                  <span className="bg-[#16A34A] text-white w-7 h-7 rounded-full flex items-center justify-center text-sm mr-2.5 shadow-sm">📋</span>
+                  Service Details & Overview
+                </h3>
                 <div 
-                  className="text-gray-800 text-lg leading-relaxed break-words"
+                  className="rich-text-content text-gray-800 text-base leading-relaxed break-words"
                   dangerouslySetInnerHTML={{ __html: service.description }}
                 />
               </div>
