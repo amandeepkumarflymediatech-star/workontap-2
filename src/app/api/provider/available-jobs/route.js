@@ -304,7 +304,7 @@ export async function GET(request) {
       success: true, 
       data: processedJobs, 
       provider_city: providerCity, 
-      provider_area_names: providerAreaNames,
+      provider_area_names: allowedLocationTokens,
       total: totalJobs,
       hasMore: processedJobs.length === limit,
       page,
