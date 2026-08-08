@@ -226,34 +226,39 @@ const ContractorJobsScreen = ({ navigation }) => {
     const renderJobItem = ({ item: job }) => {
         const dur = job.pricing?.duration_minutes || 60;
         const commPct = job.pricing?.commission_percent || 0;
-        const baseEarnings = job.pricing?.provider_base_earnings || 0;
         const otRate = job.pricing?.overtime_rate || 0;
         const netOT = job.pricing?.net_overtime_rate || (otRate * (1 - commPct / 100));
-        const hasOvertime = job.pricing?.has_overtime;
-        const isAdminAssigned = job.is_admin_assigned;
+        const hasOvertime = Boolean(job.pricing?.has_overtime);
+        const isAdminAssigned = Boolean(job.is_admin_assigned);
+        const photosCount = Array.isArray(job.photos) ? job.photos.length : 0;
+        const hasAccessInfo = Boolean(job.parking_access || job.elevator_access || job.has_pets);
 
         const cardBorderColor = isAdminAssigned ? '#bfdbfe' : (hasOvertime ? '#ddd6fe' : '#f1f5f9');
-        const accentColor = isAdminAssigned ? '#2563eb' : (hasOvertime ? '#15843E' : '#15843E');
+        const accentColor = isAdminAssigned ? '#2563eb' : '#15843E';
 
         return (
             <View key={job.id} style={[styles.jobCard, { borderColor: cardBorderColor }]}>
-                {isAdminAssigned && (
+                {isAdminAssigned ? (
                     <View style={styles.assignedBanner}>
                         <Ionicons name="sparkles" size={12} color="#1e40af" />
                         <Text style={styles.assignedBannerText}>Assigned to you by admin — waiting for acceptance</Text>
                     </View>
-                )}
-                {hasOvertime && !isAdminAssigned && (
+                ) : null}
+                {hasOvertime && !isAdminAssigned ? (
                     <View style={styles.otHeaderBanner}>
                         <Ionicons name="time-outline" size={14} color="#fff" style={{ fontSize: Typography.getCustom(14) }} />
                         <Text style={styles.otHeaderBannerText}>Overtime pay: +${netOT.toFixed(2)}/hr (after 1st hour)</Text>
                     </View>
-                )}
+                ) : null}
 
                 <View style={styles.cardHeader}>
                     <View style={styles.serviceIconContainer}>
                         <View style={[styles.iconCircle, { backgroundColor: accentColor + '15' }]}>
-                            <Text style={styles.categoryEmoji}> {job.category_icon ? <Ionicons name={job.category_icon} size={24} color={accentColor} /> : '🛠️'}</Text>
+                            {job.category_icon ? (
+                                <Ionicons name={job.category_icon} size={24} color={accentColor} />
+                            ) : (
+                                <Text style={styles.categoryEmoji}>🛠️</Text>
+                            )}
                         </View>
                         <View style={styles.serviceTextContainer}>
                             <Text style={styles.serviceName}>{job.service_name}</Text>
@@ -272,11 +277,11 @@ const ContractorJobsScreen = ({ navigation }) => {
                             <Ionicons name="time-outline" size={16} color="#000000ff" />
                             <Text style={styles.metaBadgeText}>{formatDuration(dur)}</Text>
                         </View>
-                        {hasOvertime && (
+                        {hasOvertime ? (
                             <View style={[styles.metaBadge, styles.otBadge]}>
                                 <Text style={styles.otBadgeText}>+${netOT.toFixed(2)}/hr OT</Text>
                             </View>
-                        )}
+                        ) : null}
                     </View>
 
                     <View style={styles.infoGrid}>
@@ -292,22 +297,21 @@ const ContractorJobsScreen = ({ navigation }) => {
                             <Ionicons name="location-outline" size={14} color="#000000ff" />
                             <Text style={styles.infoItemText} numberOfLines={1}>{job.address_line1?.split(',')[0]}</Text>
                         </View>
-                        {job.photos?.length > 0 && (
+                        {photosCount > 0 ? (
                             <View style={styles.infoItem}>
                                 <Ionicons name="images-outline" size={14} color="#2563eb" />
-                                <Text style={[styles.infoItemText, { color: '#2563eb', fontWeight: 'bold' }]}>{job.photos.length} Photo{job.photos.length > 1 ? 's' : ''}</Text>
+                                <Text style={[styles.infoItemText, { color: '#2563eb', fontWeight: 'bold' }]}>{photosCount} Photo{photosCount > 1 ? 's' : ''}</Text>
                             </View>
-                        )}
+                        ) : null}
                     </View>
 
-                    {(job.parking_access || job.elevator_access || job.has_pets) && (
+                    {hasAccessInfo ? (
                         <View style={styles.accessRow}>
-                            {!!job.parking_access && <Text style={styles.accessTag}>Parking</Text>}
-                            {!!job.elevator_access && <Text style={styles.accessTag}>Elevator</Text>}
-                            {!!job.has_pets && <Text style={styles.accessTag}>Pets</Text>}
+                            {Boolean(job.parking_access) ? <Text style={styles.accessTag}>Parking</Text> : null}
+                            {Boolean(job.elevator_access) ? <Text style={styles.accessTag}>Elevator</Text> : null}
+                            {Boolean(job.has_pets) ? <Text style={styles.accessTag}>Pets</Text> : null}
                         </View>
-                    )}
-
+                    ) : null}
 
                 </View>
 
@@ -343,11 +347,13 @@ const ContractorJobsScreen = ({ navigation }) => {
     const ListHeader = () => (
         <>
             {/* Stats & Filters */}
-            {jobs.length > 0 && (
+            {jobs.length > 0 ? (
                 <View style={styles.topSection}>
                     <View style={styles.statsRow}>
                         <Text style={styles.statItem}>Total: <Text style={styles.statVal}>{stats.total}</Text></Text>
-                        {stats.assigned > 0 && <Text style={styles.statItem}>🎯 Assigned: <Text style={[styles.statVal, { color: '#2563eb' }]}>{stats.assigned}</Text></Text>}
+                        {stats.assigned > 0 ? (
+                            <Text style={styles.statItem}>🎯 Assigned: <Text style={[styles.statVal, { color: '#2563eb' }]}>{stats.assigned}</Text></Text>
+                        ) : null}
                         <Text style={styles.statItem}>+OT: <Text style={[styles.statVal, { color: '#15843E' }]}>{stats.overtime}</Text></Text>
                         <Text style={styles.statItem}>Base: <Text style={styles.statVal}>{stats.base}</Text></Text>
                     </View>
@@ -358,8 +364,10 @@ const ContractorJobsScreen = ({ navigation }) => {
                             { id: 'assigned', label: '🎯 Assigned' },
                             { id: 'with_overtime', label: '+Overtime' },
                             { id: 'base_only', label: 'Base Only' },
-                        ].map((f) => (
-                            (f.id !== 'assigned' || stats.assigned > 0) && (
+                        ].map((f) => {
+                            const showChip = f.id !== 'assigned' || stats.assigned > 0;
+                            if (!showChip) return null;
+                            return (
                                 <TouchableOpacity
                                     key={f.id}
                                     onPress={() => setFilter(f.id)}
@@ -367,11 +375,11 @@ const ContractorJobsScreen = ({ navigation }) => {
                                 >
                                     <Text style={[styles.filterText, filter === f.id && styles.filterTextActive]}>{f.label}</Text>
                                 </TouchableOpacity>
-                            )
-                        ))}
+                            );
+                        })}
                     </ScrollView>
                 </View>
-            )}
+            ) : null}
         </>
     );
 
