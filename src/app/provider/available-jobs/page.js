@@ -367,7 +367,7 @@ export default function ProviderAvailableJobs() {
         </div>
       </div>
 
-      {autoFellBack && (
+      {/* {autoFellBack && (
         <div className="mb-5 p-3.5 bg-amber-50 border border-amber-200 rounded-2xl text-xs text-amber-800 font-medium flex items-center justify-between gap-3 shadow-sm">
           <div className="flex items-center gap-2">
             <span className="text-base flex-shrink-0">🌐</span>
@@ -380,7 +380,7 @@ export default function ProviderAvailableJobs() {
             Filter by City
           </button>
         </div>
-      )}
+      )} */}
 
       {/* Stripe warning banner */}
       {!stripeConnected && !loading && (
