@@ -560,8 +560,8 @@ export default function JobRequests() {
 
                   {search && (
                     <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${isDarkMode ? 'bg-slate-800 text-teal-400 border border-slate-700' : 'bg-teal-50 text-teal-700 border border-teal-200'}`}>
-                      Search: "{search}"
-                      <button onClick={() => setSearch('')} className="hover:opacity-80">✕</button>
+                      Search: &quot;{search}&quot;
+                      <button onClick={() => setSearch('')} className="hover:opacity-80"><FiX className="w-3 h-3" /></button>
                     </span>
                   )}
 

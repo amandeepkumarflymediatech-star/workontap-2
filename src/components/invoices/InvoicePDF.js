@@ -175,7 +175,7 @@ const InvoicePDF = ({ booking, invoiceNumber, date }) => {
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
           <View>
-            <Image src="/logo.png" style={styles.logo} />
+            <Image src="/logo.png" style={styles.logo} alt="WorkOnTap Logo" />
             <Text style={{ color: '#64748b', marginTop: 4 }}>Professional Home Services</Text>
           </View>
           <View style={styles.invoiceMeta}>

@@ -528,7 +528,7 @@ export default function Users() {
                 <span className={`font-semibold ${isDarkMode ? 'text-slate-400' : 'text-gray-500'}`}>Active Filters:</span>
                 {searchTerm && (
                   <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${isDarkMode ? 'bg-slate-800 text-teal-400 border border-slate-700' : 'bg-teal-50 text-teal-700 border border-teal-200'}`}>
-                    Search: "{searchTerm}" <button onClick={() => setSearchTerm('')}><FiX className="w-3 h-3" /></button>
+                    Search: &quot;{searchTerm}&quot; <button onClick={() => setSearchTerm('')}><FiX className="w-3 h-3" /></button>
                   </span>
                 )}
                 {customerFilter !== 'all' && (
@@ -650,17 +650,17 @@ export default function Users() {
                 <span className={`font-semibold ${isDarkMode ? 'text-slate-400' : 'text-gray-500'}`}>Active Filters:</span>
                 {searchTerm && (
                   <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${isDarkMode ? 'bg-slate-800 text-teal-400 border border-slate-700' : 'bg-teal-50 text-teal-700 border border-teal-200'}`}>
-                    Search: "{searchTerm}" <button onClick={() => setSearchTerm('')}>✕</button>
+                    Search: &quot;{searchTerm}&quot; <button onClick={() => setSearchTerm('')}><FiX className="w-3 h-3" /></button>
                   </span>
                 )}
                 {providerFilter !== 'all' && (
                   <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${isDarkMode ? 'bg-slate-800 text-teal-400 border border-slate-700' : 'bg-teal-50 text-teal-700 border border-teal-200'}`}>
-                    Status: {providerFilter} <button onClick={() => setProviderFilter('all')}>✕</button>
+                    Status: {providerFilter} <button onClick={() => setProviderFilter('all')}><FiX className="w-3 h-3" /></button>
                   </span>
                 )}
                 {providerSpecialtyFilter !== 'all' && (
                   <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${isDarkMode ? 'bg-slate-800 text-teal-400 border border-slate-700' : 'bg-teal-50 text-teal-700 border border-teal-200'}`}>
-                    Specialty: {providerSpecialtyFilter} <button onClick={() => setProviderSpecialtyFilter('all')}>✕</button>
+                    Specialty: {providerSpecialtyFilter} <button onClick={() => setProviderSpecialtyFilter('all')}><FiX className="w-3 h-3" /></button>
                   </span>
                 )}
                 {providerSort !== 'newest' && (
