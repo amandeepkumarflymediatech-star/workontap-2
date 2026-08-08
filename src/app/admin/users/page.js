@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAdminTheme } from '../layout'
 import Swal from 'sweetalert2'
-import { ChevronDown } from 'lucide-react'
+import { FiSearch, FiFilter, FiChevronDown, FiX } from 'react-icons/fi'
 
 const PAGE_SIZE = 8
 
@@ -72,6 +72,10 @@ export default function Users() {
   const [userBookings, setUserBookings] = useState([])
   const [loadingBookings, setLoadingBookings] = useState(false)
   const [providerFilter, setProviderFilter] = useState('all')
+  const [customerFilter, setCustomerFilter] = useState('all')
+  const [customerSort, setCustomerSort] = useState('newest')
+  const [providerSpecialtyFilter, setProviderSpecialtyFilter] = useState('all')
+  const [providerSort, setProviderSort] = useState('newest')
   const [showSuccessMessage, setShowSuccessMessage] = useState('')
   const [showErrorMessage, setShowErrorMessage] = useState('')
   const [showMobileFilter, setShowMobileFilter] = useState(false)
@@ -92,7 +96,7 @@ export default function Users() {
   const [providerForm, setProviderForm] = useState({ name: '', email: '', phone: '', specialty: '', city: '', status: 'pending' })
 
   useEffect(() => { checkAuth(); loadAllUsers() }, [])
-  useEffect(() => { setCustomerPage(1); setAdminPage(1); setProviderPage(1) }, [searchTerm, providerFilter])
+  useEffect(() => { setCustomerPage(1); setAdminPage(1); setProviderPage(1) }, [searchTerm, providerFilter, customerFilter, customerSort, providerSpecialtyFilter, providerSort])
 
   const checkAuth = async () => {
   try {
@@ -241,15 +245,100 @@ export default function Users() {
     } catch { showMessage('error', 'Failed to update provider') }
   }
 
-  const search = (items, fields) => {
-    if (!searchTerm) return items
-    const q = searchTerm.toLowerCase()
-    return items.filter(item => fields.some(f => (item[f] || '').toString().toLowerCase().includes(q)))
+  const specialtiesList = Array.from(new Set(providers.map(p => p.specialty).filter(Boolean)))
+
+  const filteredCustomers = customers.filter(c => {
+    if (searchTerm.trim()) {
+      const q = searchTerm.toLowerCase().trim()
+      const name = `${c.first_name || ''} ${c.last_name || ''}`.toLowerCase()
+      const email = (c.email || '').toLowerCase()
+      const phone = (c.phone || '').toLowerCase()
+      if (!name.includes(q) && !email.includes(q) && !phone.includes(q)) return false
+    }
+    if (customerFilter === 'with_bookings' && (!c.booking_count || c.booking_count === 0)) return false
+    if (customerFilter === 'no_bookings' && c.booking_count && c.booking_count > 0) return false
+    if (customerFilter === 'newsletter' && !c.receive_offers) return false
+    return true
+  }).sort((a, b) => {
+    if (customerSort === 'oldest') {
+      return new Date(a.created_at || 0) - new Date(b.created_at || 0)
+    }
+    if (customerSort === 'name_asc') {
+      const nameA = `${a.first_name || ''} ${a.last_name || ''}`.toLowerCase()
+      const nameB = `${b.first_name || ''} ${b.last_name || ''}`.toLowerCase()
+      return nameA.localeCompare(nameB)
+    }
+    if (customerSort === 'name_desc') {
+      const nameA = `${a.first_name || ''} ${a.last_name || ''}`.toLowerCase()
+      const nameB = `${b.first_name || ''} ${b.last_name || ''}`.toLowerCase()
+      return nameB.localeCompare(nameA)
+    }
+    if (customerSort === 'bookings_desc') {
+      return (b.booking_count || 0) - (a.booking_count || 0)
+    }
+    return new Date(b.created_at || 0) - new Date(a.created_at || 0)
+  })
+
+  const filteredAdmins = admins.filter(a => {
+    if (!searchTerm.trim()) return true
+    const q = searchTerm.toLowerCase().trim()
+    const name = `${a.first_name || ''} ${a.last_name || ''}`.toLowerCase()
+    const email = (a.email || '').toLowerCase()
+    return name.includes(q) || email.includes(q)
+  })
+
+  const filteredProviders = providers.filter(p => {
+    if (providerFilter !== 'all' && p.status !== providerFilter) return false
+    if (providerSpecialtyFilter !== 'all' && p.specialty !== providerSpecialtyFilter) return false
+
+    if (searchTerm.trim()) {
+      const q = searchTerm.toLowerCase().trim()
+      const name = (p.name || '').toLowerCase()
+      const email = (p.email || '').toLowerCase()
+      const phone = (p.phone || '').toLowerCase()
+      const specialty = (p.specialty || '').toLowerCase()
+      const city = (p.city || '').toLowerCase()
+
+      if (!name.includes(q) && !email.includes(q) && !phone.includes(q) && !specialty.includes(q) && !city.includes(q)) {
+        return false
+      }
+    }
+    return true
+  }).sort((a, b) => {
+    if (providerSort === 'oldest') {
+      return new Date(a.created_at || 0) - new Date(b.created_at || 0)
+    }
+    if (providerSort === 'rating_desc') {
+      const rA = parseFloat(a.avg_rating || a.rating || 0)
+      const rB = parseFloat(b.avg_rating || b.rating || 0)
+      return rB - rA
+    }
+    if (providerSort === 'jobs_desc') {
+      return (parseInt(b.total_jobs) || 0) - (parseInt(a.total_jobs) || 0)
+    }
+    if (providerSort === 'earnings_desc') {
+      return (parseFloat(b.total_earnings) || 0) - (parseFloat(a.total_earnings) || 0)
+    }
+    if (providerSort === 'name_asc') {
+      return (a.name || '').toLowerCase().localeCompare((b.name || '').toLowerCase())
+    }
+    return new Date(b.created_at || 0) - new Date(a.created_at || 0)
+  })
+
+  const hasActiveCustomerFilters = customerFilter !== 'all' || customerSort !== 'newest' || searchTerm.trim() !== ''
+  const clearCustomerFilters = () => {
+    setCustomerFilter('all')
+    setCustomerSort('newest')
+    setSearchTerm('')
   }
 
-  const filteredCustomers = search(customers, ['first_name', 'last_name', 'email', 'phone'])
-  const filteredAdmins = search(admins, ['first_name', 'last_name', 'email', 'phone'])
-  const filteredProviders = search(providerFilter === 'all' ? providers : providers.filter(p => p.status === providerFilter), ['name', 'email', 'phone', 'city'])
+  const hasActiveProviderFilters = providerFilter !== 'all' || providerSpecialtyFilter !== 'all' || providerSort !== 'newest' || searchTerm.trim() !== ''
+  const clearProviderFilters = () => {
+    setProviderFilter('all')
+    setProviderSpecialtyFilter('all')
+    setProviderSort('newest')
+    setSearchTerm('')
+  }
 
   const pagedCustomers = filteredCustomers.slice((customerPage - 1) * PAGE_SIZE, customerPage * PAGE_SIZE)
   const pagedAdmins = filteredAdmins.slice((adminPage - 1) * PAGE_SIZE, adminPage * PAGE_SIZE)
@@ -296,7 +385,7 @@ export default function Users() {
     return badges[status] || 'bg-gray-500/20 text-gray-600 dark:text-gray-400 border-gray-500/30'
   }
 
-  const card = `rounded-xl shadow-lg border ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'}`
+  const card = `rounded-xl  border ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'}`
   const th = `px-3 sm:px-6 py-3 sm:py-4 text-left text-xs sm:text-sm font-semibold ${isDarkMode ? 'text-slate-300' : 'text-gray-700'}`
   const tdText = `text-sm ${isDarkMode ? 'text-white' : 'text-gray-900'}`
   const subText = `text-xs ${isDarkMode ? 'text-slate-400' : 'text-gray-500'}`
@@ -368,52 +457,225 @@ export default function Users() {
         </div>
       )}
 
-      {/* Provider Filter Section */}
-      {activeTab === 'providers' && (
-        <div className="mb-4">
-          {/* Mobile Filter Toggle */}
-          <div className="flex xs:hidden items-center gap-2 mb-3">
-            <button
-              onClick={() => setShowMobileFilter(!showMobileFilter)}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium border ${isDarkMode ? 'bg-slate-800 text-slate-300 border-slate-700' : 'bg-white text-gray-700 border-gray-200'}`}
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-              </svg>
-              Filter by Status
-              <ChevronDown className={`w-4 h-4 transition-transform ${showMobileFilter ? 'rotate-180' : ''}`} />
-            </button>
-            <span className={`text-xs ${isDarkMode ? 'text-slate-500' : 'text-gray-400'}`}>
-              {providerFilter !== 'all' ? `Showing: ${providerFilter}` : 'All providers'}
-            </span>
+      {/* Customers Tab Filters & Search */}
+      {activeTab === 'customers' && (
+        <div className={`p-4 sm:p-5 rounded-2xl border mb-5 transition-all shadow-sm ${
+          isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'
+        }`}>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-3">
+            {/* Search Input */}
+            <div className="relative flex-1">
+              <input
+                type="text"
+                placeholder="Search customers by name, email, or phone…"
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                className={`w-full pl-10 ${searchTerm ? 'pr-9' : 'pr-4'} py-2.5 rounded-xl text-xs sm:text-sm border focus:outline-none focus:ring-2 focus:ring-teal-500 transition ${
+                  isDarkMode
+                    ? 'bg-slate-800 border-slate-700 text-white placeholder-slate-400'
+                    : 'bg-slate-50 border-gray-200 text-gray-900 placeholder-gray-400'
+                }`}
+              />
+              <FiSearch className={`w-4 h-4 absolute left-3.5 top-3.5 ${isDarkMode ? 'text-slate-400' : 'text-gray-400'}`} />
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm('')}
+                  className={`absolute right-3 top-3 text-xs p-0.5 rounded-full ${isDarkMode ? 'text-slate-400 hover:text-white' : 'text-gray-400 hover:text-gray-600'}`}
+                >
+                  <FiX className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+
+            {/* Customer Activity Filter */}
+            <div className="w-full sm:w-48">
+              <select
+                value={customerFilter}
+                onChange={e => setCustomerFilter(e.target.value)}
+                className={`w-full px-3 py-2.5 rounded-xl text-xs sm:text-sm border focus:outline-none focus:ring-2 focus:ring-teal-500 transition ${
+                  isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-gray-200 text-gray-900'
+                }`}
+              >
+                <option value="all">All Customers</option>
+                <option value="with_bookings">🟢 Active Bookers (1+)</option>
+                <option value="no_bookings">⚪ No Bookings Yet</option>
+                <option value="newsletter">📬 Newsletter Subscribers</option>
+              </select>
+            </div>
+
+            {/* Customer Sort */}
+            <div className="w-full sm:w-48">
+              <select
+                value={customerSort}
+                onChange={e => setCustomerSort(e.target.value)}
+                className={`w-full px-3 py-2.5 rounded-xl text-xs sm:text-sm border focus:outline-none focus:ring-2 focus:ring-teal-500 transition ${
+                  isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-gray-200 text-gray-900'
+                }`}
+              >
+                <option value="newest">📅 Newest Joined</option>
+                <option value="oldest">📅 Oldest Joined</option>
+                <option value="name_asc">🔤 Name: A to Z</option>
+                <option value="name_desc">🔤 Name: Z to A</option>
+                <option value="bookings_desc">📊 Most Bookings</option>
+              </select>
+            </div>
           </div>
 
-          {/* Filter Buttons */}
-          <div className={`${showMobileFilter ? 'block' : 'hidden'} xs:block`}>
-            <div className="flex flex-wrap gap-1.5 sm:gap-2">
+          {/* Active Badges & Reset Bar */}
+          {hasActiveCustomerFilters && (
+            <div className="flex items-center justify-between gap-3 pt-3 border-t border-dashed dark:border-slate-800 border-gray-200 flex-wrap text-xs">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className={`font-semibold ${isDarkMode ? 'text-slate-400' : 'text-gray-500'}`}>Active Filters:</span>
+                {searchTerm && (
+                  <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${isDarkMode ? 'bg-slate-800 text-teal-400 border border-slate-700' : 'bg-teal-50 text-teal-700 border border-teal-200'}`}>
+                    Search: "{searchTerm}" <button onClick={() => setSearchTerm('')}><FiX className="w-3 h-3" /></button>
+                  </span>
+                )}
+                {customerFilter !== 'all' && (
+                  <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${isDarkMode ? 'bg-slate-800 text-teal-400 border border-slate-700' : 'bg-teal-50 text-teal-700 border border-teal-200'}`}>
+                    Filter: {customerFilter} <button onClick={() => setCustomerFilter('all')}><FiX className="w-3 h-3" /></button>
+                  </span>
+                )}
+                {customerSort !== 'newest' && (
+                  <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${isDarkMode ? 'bg-slate-800 text-teal-400 border border-slate-700' : 'bg-teal-50 text-teal-700 border border-teal-200'}`}>
+                    Sort: {customerSort} <button onClick={() => setCustomerSort('newest')}><FiX className="w-3 h-3" /></button>
+                  </span>
+                )}
+              </div>
+              <button onClick={clearCustomerFilters} className="text-red-600 dark:text-red-400 hover:underline font-semibold">
+                Clear Filters
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Providers Tab Filters & Search */}
+      {activeTab === 'providers' && (
+        <div className={`p-4 sm:p-5 rounded-2xl border mb-5 transition-all shadow-sm ${
+          isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'
+        }`}>
+          {/* Top Row: Search */}
+          <div className="relative mb-3">
+            <input
+              type="text"
+              placeholder="Search providers by name, email, phone, specialty, or city…"
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              className={`w-full pl-10 ${searchTerm ? 'pr-9' : 'pr-4'} py-2.5 rounded-xl text-xs sm:text-sm border focus:outline-none focus:ring-2 focus:ring-teal-500 transition ${
+                isDarkMode
+                  ? 'bg-slate-800 border-slate-700 text-white placeholder-slate-400'
+                  : 'bg-slate-50 border-gray-200 text-gray-900 placeholder-gray-400'
+              }`}
+            />
+            <FiSearch className={`w-4 h-4 absolute left-3.5 top-3.5 ${isDarkMode ? 'text-slate-400' : 'text-gray-400'}`} />
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm('')}
+                className={`absolute right-3 top-3 text-xs p-0.5 rounded-full ${isDarkMode ? 'text-slate-400 hover:text-white' : 'text-gray-400 hover:text-gray-600'}`}
+              >
+                <FiX className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+
+          {/* Status Tabs Scrollable */}
+          <div className="overflow-x-auto pb-2 -mx-1 px-1 lg:mx-0 lg:px-0 mb-3 scrollbar-hide">
+            <div className="flex items-center gap-1.5 min-w-max">
               {['all', 'active', 'inactive', 'suspended', 'pending', 'rejected'].map(s => (
-                <button key={s} onClick={() => { setProviderFilter(s); setShowMobileFilter(false) }}
-                  className={`px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg text-[10px] xs:text-xs sm:text-sm font-medium capitalize transition-all whitespace-nowrap ${providerFilter === s
-                    ? 'bg-gradient-to-r from-teal-500 to-cyan-500 text-white'
-                    : isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
+                <button
+                  key={s}
+                  onClick={() => { setProviderFilter(s); setShowMobileFilter(false) }}
+                  className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs sm:text-sm font-medium capitalize transition-all whitespace-nowrap ${
+                    providerFilter === s
+                      ? 'bg-teal-600 text-white shadow-md'
+                      : isDarkMode
+                        ? 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
                   {s}
                 </button>
               ))}
             </div>
           </div>
+
+          {/* Specialty & Sort Dropdowns Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t dark:border-slate-800 border-gray-100">
+            {/* Specialty Filter */}
+            <div>
+              <label className={`block text-[11px] font-semibold uppercase tracking-wider mb-1 ${isDarkMode ? 'text-slate-400' : 'text-gray-500'}`}>
+                Specialty Filter
+              </label>
+              <select
+                value={providerSpecialtyFilter}
+                onChange={e => setProviderSpecialtyFilter(e.target.value)}
+                className={`w-full px-3 py-2 rounded-xl text-xs sm:text-sm border focus:outline-none focus:ring-2 focus:ring-teal-500 transition ${
+                  isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-gray-200 text-gray-900'
+                }`}
+              >
+                <option value="all">All Specialties ({specialtiesList.length})</option>
+                {specialtiesList.map(sp => (
+                  <option key={sp} value={sp}>{sp}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Provider Sort */}
+            <div>
+              <label className={`block text-[11px] font-semibold uppercase tracking-wider mb-1 ${isDarkMode ? 'text-slate-400' : 'text-gray-500'}`}>
+                Sort By
+              </label>
+              <select
+                value={providerSort}
+                onChange={e => setProviderSort(e.target.value)}
+                className={`w-full px-3 py-2 rounded-xl text-xs sm:text-sm border focus:outline-none focus:ring-2 focus:ring-teal-500 transition ${
+                  isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-gray-200 text-gray-900'
+                }`}
+              >
+                <option value="newest">📅 Newest Joined</option>
+                <option value="oldest">📅 Oldest Joined</option>
+                <option value="rating_desc">⭐ Highest Rating</option>
+                <option value="jobs_desc">💼 Most Jobs Completed</option>
+                <option value="earnings_desc">💵 Highest Earnings</option>
+                <option value="name_asc">🔤 Name: A to Z</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Active Badges & Reset Bar */}
+          {hasActiveProviderFilters && (
+            <div className="flex items-center justify-between gap-3 pt-3 mt-3 border-t border-dashed dark:border-slate-800 border-gray-200 flex-wrap text-xs">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className={`font-semibold ${isDarkMode ? 'text-slate-400' : 'text-gray-500'}`}>Active Filters:</span>
+                {searchTerm && (
+                  <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${isDarkMode ? 'bg-slate-800 text-teal-400 border border-slate-700' : 'bg-teal-50 text-teal-700 border border-teal-200'}`}>
+                    Search: "{searchTerm}" <button onClick={() => setSearchTerm('')}>✕</button>
+                  </span>
+                )}
+                {providerFilter !== 'all' && (
+                  <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${isDarkMode ? 'bg-slate-800 text-teal-400 border border-slate-700' : 'bg-teal-50 text-teal-700 border border-teal-200'}`}>
+                    Status: {providerFilter} <button onClick={() => setProviderFilter('all')}>✕</button>
+                  </span>
+                )}
+                {providerSpecialtyFilter !== 'all' && (
+                  <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${isDarkMode ? 'bg-slate-800 text-teal-400 border border-slate-700' : 'bg-teal-50 text-teal-700 border border-teal-200'}`}>
+                    Specialty: {providerSpecialtyFilter} <button onClick={() => setProviderSpecialtyFilter('all')}>✕</button>
+                  </span>
+                )}
+                {providerSort !== 'newest' && (
+                  <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${isDarkMode ? 'bg-slate-800 text-teal-400 border border-slate-700' : 'bg-teal-50 text-teal-700 border border-teal-200'}`}>
+                    Sort: {providerSort} <button onClick={() => setProviderSort('newest')}>✕</button>
+                  </span>
+                )}
+              </div>
+              <button onClick={clearProviderFilters} className="text-red-600 dark:text-red-400 hover:underline font-semibold">
+                Clear Filters
+              </button>
+            </div>
+          )}
         </div>
       )}
-
-      {/* Search */}
-      <div className="mb-4 sm:mb-5 relative">
-        <input type="text" placeholder="Search by name, email, or phone…"
-          value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
-          className={`w-full pl-9 sm:pl-10 pr-4 py-2.5 sm:py-3 rounded-lg border text-xs sm:text-sm ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white placeholder-slate-500' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'} focus:outline-none focus:ring-2 focus:ring-teal-500`}
-        />
-        <svg className={`absolute left-3 top-2.5 sm:top-3.5 w-4 h-4 ${isDarkMode ? 'text-slate-500' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
-      </div>
 
       {/* ── CUSTOMERS ── */}
       {activeTab === 'customers' && (
@@ -948,7 +1210,7 @@ export default function Users() {
       {isEditModalOpen && selectedUser && (
         <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsEditModalOpen(false)} />
-          <div className={`relative rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-md ${isDarkMode ? 'bg-slate-900' : 'bg-white'}`}>
+          <div className={`relative rounded-t-2xl sm:rounded-2xl  w-full sm:max-w-md ${isDarkMode ? 'bg-slate-900' : 'bg-white'}`}>
             <div className={`p-4 sm:p-6 border-b ${isDarkMode ? 'border-slate-700' : 'border-gray-200'}`}>
               <div className="flex items-center justify-between">
                 <h3 className={`text-base sm:text-lg font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Edit Customer</h3>
@@ -997,7 +1259,7 @@ export default function Users() {
       {isEditProviderOpen && (
         <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsEditProviderOpen(false)} />
-          <div className={`relative rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-md ${isDarkMode ? 'bg-slate-900' : 'bg-white'}`}>
+          <div className={`relative rounded-t-2xl sm:rounded-2xl  w-full sm:max-w-md ${isDarkMode ? 'bg-slate-900' : 'bg-white'}`}>
             <div className={`p-4 sm:p-6 border-b ${isDarkMode ? 'border-slate-700' : 'border-gray-200'}`}>
               <div className="flex items-center justify-between">
                 <h3 className={`text-base sm:text-lg font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Edit Provider</h3>

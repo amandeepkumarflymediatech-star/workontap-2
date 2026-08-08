@@ -148,9 +148,11 @@ export default function ProviderAvailableJobs() {
 
   const showToast = (type, text) => setToast({ type, text })
 
+  const [autoFellBack, setAutoFellBack] = useState(false)
+
   useEffect(() => { loadJobs(false, '', false, 1) }, [])
 
-  const loadJobs = async (silent = false, city = '', all = false, pageNum = 1) => {
+  const loadJobs = async (silent = false, city = '', all = false, pageNum = 1, isManualLocal = false) => {
     if (pageNum === 1) {
       silent ? setRefreshing(true) : setLoading(true)
     } else {
@@ -181,11 +183,7 @@ export default function ProviderAvailableJobs() {
       }
 
       if (data.success) {
-        setJobs(data.data || [])
-        setHasMore(data.hasMore || false)
-        setPage(pageNum)
-        setDbTotal(data.total || 0)
-        setShowAllAreas(all)
+        const fetchedJobs = data.data || []
 
         if (data.provider_city) {
           setProviderCity(data.provider_city)
@@ -193,7 +191,22 @@ export default function ProviderAvailableJobs() {
         if (data.provider_area_names) {
           setProviderAreaNames(data.provider_area_names)
         }
-        if (!data.data?.length && !silent && pageNum === 1) {
+
+        // ✅ Auto-fallback: If local area returns 0 jobs on initial load, automatically fetch all areas
+        if (fetchedJobs.length === 0 && !all && !city && !isManualLocal && pageNum === 1) {
+          setAutoFellBack(true)
+          setActiveCity('All Areas')
+          setShowAllAreas(true)
+          return await loadJobs(silent, '', true, 1, false)
+        }
+
+        setJobs(fetchedJobs)
+        setHasMore(data.hasMore || false)
+        setPage(pageNum)
+        setDbTotal(data.total || 0)
+        setShowAllAreas(all)
+
+        if (!fetchedJobs.length && !silent && pageNum === 1) {
           showToast('info', all ? 'No jobs available anywhere right now' : (city || activeCity) ? `No jobs found in ${city || activeCity}` : 'No jobs available in your area')
         }
       } else {
@@ -210,12 +223,14 @@ export default function ProviderAvailableJobs() {
 
   const handleCitySearch = (e) => {
     e.preventDefault()
+    setAutoFellBack(false)
     setActiveCity(searchCity)
     loadJobs(false, searchCity)
   }
 
   const clearCitySearch = () => {
     setSearchCity('')
+    setAutoFellBack(false)
     setActiveCity(providerCity)
     loadJobs(false, providerCity, false)
   }
@@ -223,12 +238,13 @@ export default function ProviderAvailableJobs() {
   const toggleAllAreas = () => {
     const next = !showAllAreas
     setShowAllAreas(next)
+    setAutoFellBack(false)
     if (next) {
       setActiveCity('All Areas')
       loadJobs(false, '', true)
     } else {
       setActiveCity('')
-      loadJobs(false, '', false)
+      loadJobs(false, '', false, 1, true)
     }
   }
 
@@ -350,6 +366,21 @@ export default function ProviderAvailableJobs() {
           </button>
         </div>
       </div>
+
+      {autoFellBack && (
+        <div className="mb-5 p-3.5 bg-amber-50 border border-amber-200 rounded-2xl text-xs text-amber-800 font-medium flex items-center justify-between gap-3 shadow-sm">
+          <div className="flex items-center gap-2">
+            <span className="text-base flex-shrink-0">🌐</span>
+            <span>No jobs currently posted in your registered local area — showing available jobs from <strong>all locations</strong>.</span>
+          </div>
+          <button
+            onClick={() => { setAutoFellBack(false); toggleAllAreas(); }}
+            className="text-amber-900 hover:text-amber-950 underline font-bold whitespace-nowrap text-[11px]"
+          >
+            Filter by City
+          </button>
+        </div>
+      )}
 
       {/* Stripe warning banner */}
       {!stripeConnected && !loading && (

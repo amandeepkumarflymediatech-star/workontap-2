@@ -197,18 +197,18 @@ export async function GET(request) {
     }
 
     if (search) {
-      query += ` AND (sp.name LIKE ? OR sp.email LIKE ? OR sp.phone LIKE ?)`;
+      query += ` AND (sp.name LIKE ? OR sp.email LIKE ? OR sp.phone LIKE ? OR sp.specialty LIKE ? OR sp.city LIKE ?)`;
       const searchTerm = `%${search}%`;
-      params.push(searchTerm, searchTerm, searchTerm);
+      params.push(searchTerm, searchTerm, searchTerm, searchTerm, searchTerm);
     }
 
     query += ` ORDER BY sp.created_at DESC`;
 
     const providers = await execute(query, params);
 
-    // Always fetch all for stats (unfiltered)
-    const allProviders = status && status !== 'all'
-      ? await execute(`SELECT id, status FROM service_providers`, [])
+    // Always fetch all for stats (unfiltered by status or search)
+    const allProviders = (status && status !== 'all') || search
+      ? await execute(`SELECT id, status, stripe_account_id, onboarding_completed, documents_verified FROM service_providers`, [])
       : providers;
 
     const stats = {

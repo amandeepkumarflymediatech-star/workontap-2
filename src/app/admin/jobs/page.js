@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAdminTheme } from '../layout'
+import { FiSearch, FiFilter, FiChevronDown, FiX, FiCheck, FiTrash2, FiFileText, FiDownload, FiEye, FiMapPin, FiClock } from 'react-icons/fi'
 
 const PAGE_SIZE = 6
 
@@ -56,11 +57,18 @@ export default function JobRequests() {
   const [jobs, setJobs] = useState([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('all')
+  const [search, setSearch] = useState('')
+  const [selectedProvider, setSelectedProvider] = useState('all')
+  const [selectedService, setSelectedService] = useState('all')
+  const [sortBy, setSortBy] = useState('newest')
+  const [showMobileFilters, setShowMobileFilters] = useState(false)
   const [showSuccessMessage, setShowSuccessMessage] = useState('')
   const [showErrorMessage, setShowErrorMessage] = useState('')
   const [page, setPage] = useState(1)
   const [selectedCustomer, setSelectedCustomer] = useState('all')
   const [customers, setCustomers] = useState([])
+  const [providersList, setProvidersList] = useState([])
+  const [servicesList, setServicesList] = useState([])
   const [showInvoiceModal, setShowInvoiceModal] = useState(false)
   const [currentInvoice, setCurrentInvoice] = useState(null)
   const [generatingInvoice, setGeneratingInvoice] = useState(null)
@@ -71,7 +79,9 @@ export default function JobRequests() {
     loadJobs()
   }, [])
 
-  useEffect(() => { setPage(1) }, [filter, selectedCustomer])
+  useEffect(() => {
+    setPage(1)
+  }, [filter, selectedCustomer, selectedProvider, selectedService, search, sortBy])
 
   const checkAuth = async () => {
     try {
@@ -98,11 +108,12 @@ export default function JobRequests() {
     }
   }
 
-
-
   useEffect(() => {
     if (jobs.length > 0) {
       const customerMap = new Map()
+      const providerSet = new Set()
+      const serviceSet = new Set()
+
       jobs.forEach(job => {
         const customerId = job.customer_id || `${job.customer_first_name}-${job.customer_last_name}-${job.customer_email}`
         if (!customerMap.has(customerId)) {
@@ -114,8 +125,18 @@ export default function JobRequests() {
             fullName: `${job.customer_first_name || ''} ${job.customer_last_name || ''}`.trim()
           })
         }
+
+        if (job.provider_name) {
+          providerSet.add(job.provider_name)
+        }
+        if (job.service_name) {
+          serviceSet.add(job.service_name)
+        }
       })
+
       setCustomers(Array.from(customerMap.values()))
+      setProvidersList(Array.from(providerSet))
+      setServicesList(Array.from(serviceSet))
     }
   }, [jobs])
 
@@ -128,8 +149,6 @@ export default function JobRequests() {
       setTimeout(() => setShowErrorMessage(''), 3000)
     }
   }
-
-
 
   const generateInvoice = async (bookingId) => {
     setGeneratingInvoice(bookingId)
@@ -209,13 +228,72 @@ export default function JobRequests() {
     }
   }
 
+  const hasActiveFilters = filter !== 'all' || selectedCustomer !== 'all' || selectedProvider !== 'all' || selectedService !== 'all' || search.trim() !== '' || sortBy !== 'newest'
+
+  const clearAllFilters = () => {
+    setFilter('all')
+    setSelectedCustomer('all')
+    setSelectedProvider('all')
+    setSelectedService('all')
+    setSearch('')
+    setSortBy('newest')
+  }
+
   const filteredJobs = jobs.filter(job => {
     if (filter !== 'all' && job.status !== filter) return false
+
     if (selectedCustomer !== 'all') {
       const customerId = job.customer_id || `${job.customer_first_name}-${job.customer_last_name}-${job.customer_email}`
       if (customerId !== selectedCustomer) return false
     }
+
+    if (selectedProvider !== 'all') {
+      if (selectedProvider === 'unassigned') {
+        if (job.provider_name) return false
+      } else if (job.provider_name !== selectedProvider) {
+        return false
+      }
+    }
+
+    if (selectedService !== 'all' && job.service_name !== selectedService) {
+      return false
+    }
+
+    if (search.trim()) {
+      const q = search.toLowerCase().trim()
+      const bookingNo = (job.booking_number || '').toString().toLowerCase()
+      const custName = `${job.customer_first_name || ''} ${job.customer_last_name || ''}`.toLowerCase()
+      const custEmail = (job.customer_email || '').toLowerCase()
+      const custPhone = (job.customer_phone || '').toLowerCase()
+      const servName = (job.service_name || '').toLowerCase()
+      const provName = (job.provider_name || '').toLowerCase()
+      const city = (job.city || '').toLowerCase()
+      const address = (job.address_line1 || '').toLowerCase()
+
+      const matches = bookingNo.includes(q) ||
+        custName.includes(q) ||
+        custEmail.includes(q) ||
+        custPhone.includes(q) ||
+        servName.includes(q) ||
+        provName.includes(q) ||
+        city.includes(q) ||
+        address.includes(q)
+
+      if (!matches) return false
+    }
+
     return true
+  }).sort((a, b) => {
+    if (sortBy === 'oldest') {
+      return new Date(a.created_at || 0) - new Date(b.created_at || 0)
+    }
+    if (sortBy === 'price_high') {
+      return parseFloat(b.service_price || 0) - parseFloat(a.service_price || 0)
+    }
+    if (sortBy === 'price_low') {
+      return parseFloat(a.service_price || 0) - parseFloat(b.service_price || 0)
+    }
+    return new Date(b.created_at || 0) - new Date(a.created_at || 0)
   })
 
   const pagedJobs = filteredJobs.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
@@ -287,61 +365,260 @@ export default function JobRequests() {
           </div>
         </div>
 
-        {/* Filters Row */}
-        <div className="mb-6 flex flex-col gap-4">
-          <div className={`flex flex-wrap gap-1 md:gap-9 p-1.5 rounded-2xl ${isDarkMode ? 'bg-slate-900 border border-slate-800' : 'bg-white border border-slate-200 shadow-sm'}`}>
-            {filterTabs.map((s) => {
-              const cfg = getStatusConfig(s)
-              const active = filter === s
-              const count = statusCount(s)
-              const label = s === 'in_progress' ? 'In Progress' : s === 'awaiting_approval' ? 'Awaiting' : s.charAt(0).toUpperCase() + s.slice(1)
-              return (
-                <button key={s} onClick={() => setFilter(s)}
-                  className={`relative flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 whitespace-nowrap ${active ? 'bg-teal-600 text-white shadow-md shadow-teal-600/20'
-                    : isDarkMode ? 'text-slate-400 hover:text-white hover:bg-slate-800'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-                    }`}
+        {/* Filters and Search Container */}
+        <div className={`p-4 sm:p-5 rounded-2xl border mb-6 transition-all shadow-sm ${
+          isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'
+        }`}>
+          {/* Top Row: Search Input & Mobile Filter Toggle */}
+          <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 mb-4">
+            {/* Search Bar */}
+            <div className="relative flex-1">
+              <input
+                type="text"
+                placeholder="Search by ID (BKG-...), Customer, Provider, Service, City..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className={`w-full pl-10 pr-9 py-2.5 rounded-xl text-sm border focus:outline-none focus:ring-2 focus:ring-teal-500 transition ${
+                  isDarkMode
+                    ? 'bg-slate-800 border-slate-700 text-white placeholder-slate-400'
+                    : 'bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400'
+                }`}
+              />
+              <FiSearch className={`w-4 h-4 absolute left-3.5 top-3.5 ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`} />
+              {search && (
+                <button
+                  type="button"
+                  onClick={() => setSearch('')}
+                  className={`absolute right-3 top-3 text-xs p-0.5 rounded-full ${
+                    isDarkMode ? 'text-slate-400 hover:text-white' : 'text-slate-400 hover:text-slate-600'
+                  }`}
                 >
-                  {s !== 'all' && cfg && <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${active ? 'bg-white/70' : cfg.dot}`}></span>}
-                  <span>{label}</span>
-                  <span className={`text-xs px-1.5 py-0.5 rounded-full font-semibold ${active ? 'bg-white/20 text-white' : isDarkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>{count}</span>
+                  <FiX className="w-3.5 h-3.5" />
                 </button>
-              )
-            })}
+              )}
+            </div>
+
+            {/* Mobile Filter Toggle Button */}
+            <div className="flex items-center gap-2 lg:hidden">
+              <button
+                type="button"
+                onClick={() => setShowMobileFilters(!showMobileFilters)}
+                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium border transition ${
+                  isDarkMode
+                    ? 'bg-slate-800 border-slate-700 text-slate-200'
+                    : 'bg-slate-50 border-slate-200 text-slate-700'
+                }`}
+              >
+                <FiFilter className="w-4 h-4" />
+                <span>Filter Options</span>
+                {hasActiveFilters && (
+                  <span className="w-2 h-2 rounded-full bg-teal-500"></span>
+                )}
+                <FiChevronDown className={`w-4 h-4 transition-transform ${showMobileFilters ? 'rotate-180' : ''}`} />
+              </button>
+
+              {hasActiveFilters && (
+                <button
+                  type="button"
+                  onClick={clearAllFilters}
+                  className="px-3 py-2.5 rounded-xl text-xs font-semibold bg-red-50 text-red-600 hover:bg-red-100 transition whitespace-nowrap"
+                >
+                  Reset
+                </button>
+              )}
+            </div>
           </div>
 
-          <div className="flex justify-start md:justify-end">
-            <select
-              value={selectedCustomer}
-              onChange={(e) => setSelectedCustomer(e.target.value)}
-              className={`w-full md:w-[350px] px-4 py-2.5 rounded-xl border ${isDarkMode
-                ? 'bg-slate-900 border-slate-800 text-white'
-                : 'bg-white border-slate-200 text-slate-900'
-                } focus:outline-none focus:ring-2 focus:ring-teal-500 transition`}
-            >
-              <option value="all">All Customers</option>
-              {customers.map((customer) => (
-                <option key={customer.id} value={customer.id}>
-                  {customer.fullName || customer.email}{" "}
-                  {customer.email && `(${customer.email})`}
-                </option>
-              ))}
-            </select>
-          </div>
-          {selectedCustomer !== 'all' && (
-            <div className="flex items-center gap-2">
-              <span className={`text-xs px-2 py-1 rounded-full ${isDarkMode ? 'bg-teal-900/30 text-teal-400' : 'bg-teal-50 text-teal-700'}`}>
-                Filtering by: {customers.find(c => c.id === selectedCustomer)?.fullName || 'Selected customer'}
-              </span>
-              <button onClick={() => setSelectedCustomer('all')} className="text-xs text-red-600 hover:underline">Clear</button>
+          {/* Status Tabs (Horizontally scrollable on mobile) */}
+          <div className="overflow-x-auto pb-2 -mx-1 px-1 lg:mx-0 lg:px-0 mb-3 scrollbar-hide">
+            <div className="flex items-center gap-1.5 min-w-max">
+              {filterTabs.map((s) => {
+                const cfg = getStatusConfig(s)
+                const active = filter === s
+                const count = statusCount(s)
+                const label = s === 'in_progress' ? 'In Progress' : s === 'awaiting_approval' ? 'Awaiting' : s.charAt(0).toUpperCase() + s.slice(1)
+                return (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => setFilter(s)}
+                    className={`relative flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 whitespace-nowrap ${
+                      active
+                        ? 'bg-teal-600 text-white shadow-md shadow-teal-600/20'
+                        : isDarkMode
+                          ? 'text-slate-400 hover:text-white hover:bg-slate-800'
+                          : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                    }`}
+                  >
+                    {s !== 'all' && cfg && <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${active ? 'bg-white/70' : cfg.dot}`}></span>}
+                    <span>{label}</span>
+                    <span className={`text-[10px] sm:text-xs px-1.5 py-0.5 rounded-full font-semibold ${
+                      active ? 'bg-white/20 text-white' : isDarkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'
+                    }`}>{count}</span>
+                  </button>
+                )
+              })}
             </div>
-          )}
+          </div>
+
+          {/* Dropdown Filters Grid (Desktop visible, Mobile collapsible) */}
+          <div className={`${showMobileFilters ? 'block' : 'hidden'} lg:block pt-3 border-t ${isDarkMode ? 'border-slate-800' : 'border-slate-100'}`}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              {/* Customer Filter */}
+              <div>
+                <label className={`block text-[11px] font-semibold uppercase tracking-wider mb-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                  Customer
+                </label>
+                <select
+                  value={selectedCustomer}
+                  onChange={(e) => setSelectedCustomer(e.target.value)}
+                  className={`w-full px-3 py-2 rounded-xl text-xs border ${
+                    isDarkMode
+                      ? 'bg-slate-800 border-slate-700 text-white'
+                      : 'bg-slate-50 border-slate-200 text-slate-900'
+                  } focus:outline-none focus:ring-2 focus:ring-teal-500 transition`}
+                >
+                  <option value="all">All Customers ({customers.length})</option>
+                  {customers.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.fullName || c.email}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Provider Filter */}
+              <div>
+                <label className={`block text-[11px] font-semibold uppercase tracking-wider mb-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                  Provider
+                </label>
+                <select
+                  value={selectedProvider}
+                  onChange={(e) => setSelectedProvider(e.target.value)}
+                  className={`w-full px-3 py-2 rounded-xl text-xs border ${
+                    isDarkMode
+                      ? 'bg-slate-800 border-slate-700 text-white'
+                      : 'bg-slate-50 border-slate-200 text-slate-900'
+                  } focus:outline-none focus:ring-2 focus:ring-teal-500 transition`}
+                >
+                  <option value="all">All Providers ({providersList.length})</option>
+                  <option value="unassigned">⚠️ Unassigned Jobs</option>
+                  {providersList.map((p) => (
+                    <option key={p} value={p}>{p}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Service Filter */}
+              <div>
+                <label className={`block text-[11px] font-semibold uppercase tracking-wider mb-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                  Service
+                </label>
+                <select
+                  value={selectedService}
+                  onChange={(e) => setSelectedService(e.target.value)}
+                  className={`w-full px-3 py-2 rounded-xl text-xs border ${
+                    isDarkMode
+                      ? 'bg-slate-800 border-slate-700 text-white'
+                      : 'bg-slate-50 border-slate-200 text-slate-900'
+                  } focus:outline-none focus:ring-2 focus:ring-teal-500 transition`}
+                >
+                  <option value="all">All Services ({servicesList.length})</option>
+                  {servicesList.map((s) => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Sort By */}
+              <div>
+                <label className={`block text-[11px] font-semibold uppercase tracking-wider mb-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                  Sort By
+                </label>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className={`w-full px-3 py-2 rounded-xl text-xs border ${
+                    isDarkMode
+                      ? 'bg-slate-800 border-slate-700 text-white'
+                      : 'bg-slate-50 border-slate-200 text-slate-900'
+                  } focus:outline-none focus:ring-2 focus:ring-teal-500 transition`}
+                >
+                  <option value="newest">📅 Newest First</option>
+                  <option value="oldest">📅 Oldest First</option>
+                  <option value="price_high">💵 Rate: High to Low</option>
+                  <option value="price_low">💵 Rate: Low to High</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Active Filter Badges & Reset Bar */}
+            {hasActiveFilters && (
+              <div className="flex items-center justify-between gap-3 mt-4 pt-3 border-t border-dashed dark:border-slate-800 border-slate-200 flex-wrap">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className={`text-xs font-semibold ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Active Filters:</span>
+
+                  {search && (
+                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${isDarkMode ? 'bg-slate-800 text-teal-400 border border-slate-700' : 'bg-teal-50 text-teal-700 border border-teal-200'}`}>
+                      Search: "{search}"
+                      <button onClick={() => setSearch('')} className="hover:opacity-80">✕</button>
+                    </span>
+                  )}
+
+                  {filter !== 'all' && (
+                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${isDarkMode ? 'bg-slate-800 text-teal-400 border border-slate-700' : 'bg-teal-50 text-teal-700 border border-teal-200'}`}>
+                      Status: {filter}
+                      <button onClick={() => setFilter('all')} className="hover:opacity-80">✕</button>
+                    </span>
+                  )}
+
+                  {selectedCustomer !== 'all' && (
+                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${isDarkMode ? 'bg-slate-800 text-teal-400 border border-slate-700' : 'bg-teal-50 text-teal-700 border border-teal-200'}`}>
+                      Customer: {customers.find(c => c.id === selectedCustomer)?.fullName || selectedCustomer}
+                      <button onClick={() => setSelectedCustomer('all')} className="hover:opacity-80">✕</button>
+                    </span>
+                  )}
+
+                  {selectedProvider !== 'all' && (
+                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${isDarkMode ? 'bg-slate-800 text-teal-400 border border-slate-700' : 'bg-teal-50 text-teal-700 border border-teal-200'}`}>
+                      Provider: {selectedProvider}
+                      <button onClick={() => setSelectedProvider('all')} className="hover:opacity-80">✕</button>
+                    </span>
+                  )}
+
+                  {selectedService !== 'all' && (
+                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${isDarkMode ? 'bg-slate-800 text-teal-400 border border-slate-700' : 'bg-teal-50 text-teal-700 border border-teal-200'}`}>
+                      Service: {selectedService}
+                      <button onClick={() => setSelectedService('all')} className="hover:opacity-80">✕</button>
+                    </span>
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={clearAllFilters}
+                  className="text-xs font-semibold text-red-600 hover:text-red-700 dark:text-red-400 hover:underline flex items-center gap-1"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                  Clear All Filters
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
-        <div className="mb-4">
-          <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-            Showing {filteredJobs.length} result{filteredJobs.length !== 1 ? 's' : ''}{selectedCustomer !== 'all' && ' for selected customer'}
+        {/* Results Counter Bar */}
+        <div className="mb-4 flex items-center justify-between text-xs sm:text-sm">
+          <p className={isDarkMode ? 'text-slate-400' : 'text-slate-500'}>
+            Showing <strong className={isDarkMode ? 'text-white' : 'text-slate-900'}>{filteredJobs.length}</strong> of {jobs.length} job request{jobs.length !== 1 ? 's' : ''}
           </p>
+          {hasActiveFilters && (
+            <button onClick={clearAllFilters} className="text-xs text-teal-600 hover:underline font-medium">
+              Reset Filters
+            </button>
+          )}
         </div>
 
         {filteredJobs.length === 0 ? (
@@ -369,7 +646,7 @@ export default function JobRequests() {
                       <div className="flex items-center justify-between mb-4">
                         <button onClick={() => router.push(`/admin/bookings/${job.id}`)}
                           className={`font-mono text-xs font-bold px-2.5 py-1 rounded-lg transition-colors ${isDarkMode ? 'text-teal-400 bg-teal-900/30 hover:bg-teal-900/60' : 'text-teal-700 bg-teal-50 hover:bg-teal-100'}`}>
-                          #{job.booking_number}
+                          {job.booking_number}
                         </button>
                         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ring-1 ${isDarkMode ? cfg.dark : cfg.badge}`}>
                           <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`}></span>
@@ -548,6 +825,17 @@ export default function JobRequests() {
           </div>
         </div>
       )}
+
+      {/* Custom scrollbar hide style */}
+      <style jsx>{`
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
     </div>
   )
 }

@@ -3,7 +3,7 @@
     "name": "WorkOnTap",
     "slug": "workontap",
     "scheme": "workontap",
-    "version": "1.4",
+    "version": "1.5",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -24,7 +24,7 @@
       }
     },
     "android": {
-      "versionCode": 21,
+      "versionCode": 22,
       "adaptiveIcon": {
         "backgroundColor": "#115E59",
         "foregroundImage": "./assets/adaptive-icon.png"

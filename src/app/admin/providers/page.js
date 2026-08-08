@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAdminTheme } from '../layout';
+import { FiSearch, FiFilter, FiChevronDown, FiX } from 'react-icons/fi';
 
 const PAGE_SIZE = 10;
 
@@ -53,22 +54,34 @@ export default function AdminProviders() {
     onboarding_completed: 0
   });
   const [loading, setLoading] = useState(true);
+  const [isSearching, setIsSearching] = useState(false);
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [page, setPage] = useState(1);
 
+  // Debounce search input changes by 300ms
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [search]);
+
   useEffect(() => {
     setPage(1);
-    loadProviders();
-  }, [filter, search]);
+    loadProviders(debouncedSearch, filter);
+  }, [filter, debouncedSearch]);
 
-  const loadProviders = async () => {
+  const loadProviders = async (searchQuery = debouncedSearch, filterStatus = filter) => {
     try {
-      setLoading(true);
+      if (!loading) {
+        setIsSearching(true);
+      }
       const params = new URLSearchParams();
-      if (filter !== 'all') params.append('status', filter);
-      if (search) params.append('search', search);
+      if (filterStatus !== 'all') params.append('status', filterStatus);
+      if (searchQuery) params.append('search', searchQuery);
 
       const res = await fetch(`/api/admin/providers?${params}`);
       const data = await res.json();
@@ -81,6 +94,7 @@ export default function AdminProviders() {
       console.error('Error:', error);
     } finally {
       setLoading(false);
+      setIsSearching(false);
     }
   };
 
@@ -187,13 +201,9 @@ export default function AdminProviders() {
               className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition
                 ${isDarkMode ? 'bg-slate-700 text-slate-300' : 'bg-gray-100 text-gray-700'}`}
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-              </svg>
+              <FiFilter className="w-4 h-4" />
               Filter by Status
-              <svg className={`w-4 h-4 transition-transform ${showMobileFilters ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
+              <FiChevronDown className={`w-4 h-4 transition-transform ${showMobileFilters ? 'rotate-180' : ''}`} />
             </button>
             <span className={`text-xs ${isDarkMode ? 'text-slate-500' : 'text-gray-400'}`}>
               {filter !== 'all' ? `Showing: ${filter}` : 'All providers'}
@@ -229,19 +239,32 @@ export default function AdminProviders() {
               <div className="relative w-full lg:w-80">
                 <input
                   type="text"
-                  placeholder="Search by name, email, phone..."
+                  placeholder="Search name, email, phone, city..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className={`pl-9 sm:pl-10 pr-4 py-2 sm:py-2.5 text-sm border rounded-lg w-full focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition 
+                  className={`pl-9 sm:pl-10 ${search || isSearching ? 'pr-16' : 'pr-4'} py-2 sm:py-2.5 text-sm border rounded-lg w-full focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition 
                     ${isDarkMode
                       ? 'bg-slate-700 border-slate-600 text-white placeholder-slate-400'
                       : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
                     }`}
                 />
-                <svg className={`w-4 sm:w-5 h-4 sm:h-5 absolute left-3 top-2.5 sm:top-3 ${isDarkMode ? 'text-slate-400' : 'text-gray-400'}`}
-                  fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
+                <FiSearch className={`w-4 sm:w-5 h-4 sm:h-5 absolute left-3 top-2.5 sm:top-3 ${isDarkMode ? 'text-slate-400' : 'text-gray-400'}`} />
+
+                <div className="absolute right-3 top-2.5 sm:top-3 flex items-center gap-2">
+                  {isSearching && (
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-teal-500 border-t-transparent" />
+                  )}
+                  {search && (
+                    <button
+                      type="button"
+                      onClick={() => setSearch('')}
+                      className={`text-xs p-0.5 rounded-full hover:opacity-80 transition ${isDarkMode ? 'text-slate-400 hover:text-white' : 'text-gray-400 hover:text-gray-600'}`}
+                      title="Clear search"
+                    >
+                      <FiX className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
