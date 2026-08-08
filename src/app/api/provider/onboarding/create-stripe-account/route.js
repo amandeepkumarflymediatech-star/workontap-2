@@ -91,7 +91,7 @@ export async function POST(request) {
     // Create new Stripe Express account
     const account = await stripe.accounts.create({
       type: 'express',
-      country: 'GB',
+      country: process.env.STRIPE_COUNTRY || 'CA',
       email: provider.email,
       business_type: 'individual',
       business_profile: {

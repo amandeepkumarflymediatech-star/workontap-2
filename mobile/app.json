@@ -15,7 +15,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.nhaman.workontap",
-      "buildNumber": "4",
+      "buildNumber": "5",
       "infoPlist": {
         "UIBackgroundModes": [
           "remote-notification"
@@ -57,7 +57,17 @@
         }
       ],
       "expo-apple-authentication",
-      "expo-web-browser"
+      "expo-web-browser",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "extraBuildProperties": {
+              "ENABLE_USER_SCRIPT_SANDBOXING": "NO"
+            }
+          }
+        }
+      ]
     ],
     "extra": {
       "eas": {

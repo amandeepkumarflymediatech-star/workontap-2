@@ -273,8 +273,9 @@ export async function POST(request) {
   console.log('='.repeat(100));
 
   try {
-    const rawBody = await request.arrayBuffer();
-    const body = Buffer.from(rawBody);
+    const body = await request.text();
+    console.log('📦 Webhook Body Length:', body.length);
+    console.log('📦 Webhook Body Content:', body);
     console.log(request.headers,"==========headers=========")
     const signature = request.headers.get('stripe-signature');
 
