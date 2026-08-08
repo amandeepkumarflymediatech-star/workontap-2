@@ -2,7 +2,7 @@ import { Platform } from 'react-native';
 
 // Production
 export const API_BASE_URL = "https://workontap.com";
-export const GOOGLE_MAPS_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY || "AIzaSyBjsJ5WTXCYZ989GwGOyUmCrcvB3JG_-hU";
+export const GOOGLE_MAPS_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY;
 
 // Development (Uncomment to use local backend)
 // const DEV_URL = Platform.OS === 'android' ? "http://192.168.1.4:3000" : "http://localhost:3000";
