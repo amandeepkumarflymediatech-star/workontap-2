@@ -58,9 +58,18 @@ export async function GET(request) {
     countOnly = searchParams.get('count') === 'true'
     const previewLimit = parseInt(searchParams.get('preview') || '3')
 
-    const providers = await execute('SELECT city, service_cities FROM service_providers WHERE id = ?', [providerId])
+    const providers = await execute('SELECT city, service_cities, service_areas FROM service_providers WHERE id = ?', [providerId])
     const providerCity = providers && providers.length > 0 ? (providers[0].city || '') : ''
-    const providerServiceAreas = providers && providers.length > 0 ? (providers[0].service_cities || '[]') : '[]'
+    const providerServiceCities = providers && providers.length > 0 ? (providers[0].service_cities || '[]') : '[]'
+    const providerServiceAreas = providers && providers.length > 0 ? (providers[0].service_areas || '[]') : '[]'
+
+    let parsedCities = [];
+    try { 
+      parsedCities = typeof providerServiceCities === 'string' ? JSON.parse(providerServiceCities) : providerServiceCities; 
+    } catch (e) {
+      parsedCities = [];
+    }
+    if (!Array.isArray(parsedCities)) parsedCities = [];
 
     let parsedAreas = [];
     try { 
@@ -70,19 +79,44 @@ export async function GET(request) {
     }
     if (!Array.isArray(parsedAreas)) parsedAreas = [];
 
-    // Fetch human-readable names for the provider's service areas
-    let providerAreaNames = [];
-    if (parsedAreas.length > 0) {
+    const numericIds = [];
+    const stringTokens = [];
+
+    [...parsedCities, ...parsedAreas].forEach(item => {
+      if (typeof item === 'number' || (typeof item === 'string' && /^\d+$/.test(item.trim()))) {
+        numericIds.push(parseInt(item, 10));
+      } else if (typeof item === 'string' && item.trim()) {
+        stringTokens.push(item.trim());
+      }
+    });
+
+    let dbCityNames = [];
+    if (numericIds.length > 0) {
       try {
-        const placeholders = parsedAreas.map(() => '?').join(',');
-        const areasResult = await execute(`SELECT name FROM cities WHERE id IN (${placeholders})`, parsedAreas);
+        const placeholders = numericIds.map(() => '?').join(',');
+        const areasResult = await execute(`SELECT name FROM cities WHERE id IN (${placeholders})`, numericIds);
         if (areasResult && areasResult.length > 0) {
-          providerAreaNames = areasResult.map(a => a.name);
+          dbCityNames = areasResult.map(a => a.name);
         }
       } catch (e) {
         console.error('Error fetching provider area names:', e);
       }
     }
+
+    const allowedLocationTokens = [];
+    if (providerCity && providerCity.trim()) allowedLocationTokens.push(providerCity.trim());
+
+    dbCityNames.forEach(name => {
+      if (name && !allowedLocationTokens.some(t => t.toLowerCase() === name.toLowerCase())) {
+        allowedLocationTokens.push(name.trim());
+      }
+    });
+
+    stringTokens.forEach(token => {
+      if (token && !allowedLocationTokens.some(t => t.toLowerCase() === token.toLowerCase())) {
+        allowedLocationTokens.push(token.trim());
+      }
+    });
 
     const allParam = searchParams.get('all') === 'true'
     
@@ -91,44 +125,22 @@ export async function GET(request) {
     const locationParams = []
     
     if (allParam) {
-      // Do not restrict by cluster or city
       locationCondition = ''
     } else if (cityParam) {
-      // If city is specified, filter by city instead of cluster
-      locationCondition = 'AND LOWER(b.city) = ?'
-      locationParams.push(cityParam.toLowerCase().trim())
-    } else {
-      // Build combined list of allowed city names
-      const allowedCityNames = [];
-      if (providerCity) allowedCityNames.push(providerCity.toLowerCase().trim());
-      providerAreaNames.forEach(name => {
-        const lower = name.toLowerCase().trim();
-        if (!allowedCityNames.includes(lower)) allowedCityNames.push(lower);
+      const search = `%${cityParam.toLowerCase().trim()}%`;
+      locationCondition = 'AND (LOWER(b.city) LIKE ? OR LOWER(b.address_line1) LIKE ? OR LOWER(b.cluster) LIKE ?)'
+      locationParams.push(search, search, search)
+    } else if (allowedLocationTokens.length > 0) {
+      const tokenConditions = [];
+      allowedLocationTokens.forEach(token => {
+        const searchPattern = `%${token.toLowerCase()}%`;
+        tokenConditions.push(`(LOWER(b.city) LIKE ? OR LOWER(b.address_line1) LIKE ? OR LOWER(b.cluster) LIKE ?)`);
+        locationParams.push(searchPattern, searchPattern, searchPattern);
       });
-
-      const hasClusters = parsedAreas.length > 0;
-      const hasNames = allowedCityNames.length > 0;
-
-      if (hasClusters || hasNames) {
-        const conditions = [];
-        
-        if (hasClusters) {
-          const clusterPlaceholders = parsedAreas.map(() => '?').join(',');
-          conditions.push(`b.cluster IN (${clusterPlaceholders})`);
-          locationParams.push(...parsedAreas);
-        }
-        
-        if (hasNames) {
-          const namePlaceholders = allowedCityNames.map(() => '?').join(',');
-          conditions.push(`LOWER(b.city) IN (${namePlaceholders})`);
-          locationParams.push(...allowedCityNames);
-        }
-        
-        locationCondition = `AND (${conditions.join(' OR ')})`;
-      } else {
-        // No areas and no base city
-        locationCondition = `AND 1=0`;
-      }
+      tokenConditions.push(`(b.city IS NULL OR b.city = '' OR b.cluster IS NULL OR b.cluster = '')`);
+      locationCondition = `AND (${tokenConditions.join(' OR ')})`;
+    } else {
+      locationCondition = '';
     }
 
     // ✅ Optimized: If only count is needed, run a lighter query
@@ -137,10 +149,10 @@ export async function GET(request) {
         SELECT COUNT(*) as count
         FROM bookings b
         WHERE (
-          (b.provider_id = ? AND b.status = 'matching')
+          (b.provider_id = ? AND b.status IN ('pending', 'matching'))
           OR
-          (b.provider_id IS NULL AND b.status IN ('pending', 'matching') ${locationCondition})
-        ) AND EXISTS (SELECT 1 FROM users u WHERE u.email = b.customer_email)
+          (b.provider_id IS NULL AND b.status IN ('pending', 'matching', 'unassigned', 'open') ${locationCondition})
+        )
       `
       const countResult = await query(countSql, [providerId, ...locationParams])
 
@@ -148,10 +160,10 @@ export async function GET(request) {
         SELECT id, service_name, job_date, city, provider_amount, service_price, commission_percent
         FROM bookings b
         WHERE (
-          (b.provider_id = ? AND b.status = 'matching')
+          (b.provider_id = ? AND b.status IN ('pending', 'matching'))
           OR
-          (b.provider_id IS NULL AND b.status IN ('pending', 'matching') ${locationCondition})
-        ) AND EXISTS (SELECT 1 FROM users u WHERE u.email = b.customer_email)
+          (b.provider_id IS NULL AND b.status IN ('pending', 'matching', 'unassigned', 'open') ${locationCondition})
+        )
         ORDER BY created_at DESC
         LIMIT ?
       `
@@ -175,7 +187,7 @@ export async function GET(request) {
         count: (countResult && countResult[0]) ? (countResult[0].count || 0) : 0,
         recentJobs,
         provider_city: providerCity,
-        provider_area_names: providerAreaNames
+        provider_area_names: allowedLocationTokens
       })
     }
 
@@ -201,16 +213,16 @@ export async function GET(request) {
         -- ✅ Admin pre-assigned to THIS provider (always show these)
         (
           b.provider_id = ?
-          AND b.status = 'matching'
+          AND b.status IN ('pending', 'matching')
         )
         OR
-        -- ✅ Open jobs filtered strictly by city
+        -- ✅ Open jobs
         (
           b.provider_id IS NULL
-          AND b.status IN ('pending', 'matching')
+          AND b.status IN ('pending', 'matching', 'unassigned', 'open')
           ${locationCondition}
         )
-      ) AND EXISTS (SELECT 1 FROM users u WHERE u.email = b.customer_email)
+      )
       ORDER BY admin_assigned DESC, b.created_at DESC
       LIMIT ${limit} OFFSET ${offset}
     `
@@ -220,10 +232,10 @@ export async function GET(request) {
       SELECT COUNT(*) as total
       FROM bookings b
       WHERE (
-        (b.provider_id = ? AND b.status = 'matching')
+        (b.provider_id = ? AND b.status IN ('pending', 'matching'))
         OR
-        (b.provider_id IS NULL AND b.status IN ('pending', 'matching') ${locationCondition})
-      ) AND EXISTS (SELECT 1 FROM users u WHERE u.email = b.customer_email)
+        (b.provider_id IS NULL AND b.status IN ('pending', 'matching', 'unassigned', 'open') ${locationCondition})
+      )
     `
     const countParams = [providerId, ...locationParams]
     const countResult = await query(countSql, countParams)
@@ -361,7 +373,7 @@ export async function POST(request) {
         return NextResponse.json({ success: false, message: 'Job already accepted by another provider' }, { status: 409 })
       }
 
-      if (!['pending', 'matching'].includes(job.status)) {
+      if (!['pending', 'matching', 'unassigned', 'open'].includes(job.status)) {
         await connection.query('ROLLBACK')
         return NextResponse.json({ success: false, message: `Job not available (status: ${job.status})` }, { status: 409 })
       }

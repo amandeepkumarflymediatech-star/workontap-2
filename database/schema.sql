@@ -106,6 +106,7 @@ CREATE TABLE IF NOT EXISTS service_providers (
     approved_at DATETIME,
     rejection_reason TEXT,
     service_areas JSON,
+    service_cities JSON,
     skills JSON,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
