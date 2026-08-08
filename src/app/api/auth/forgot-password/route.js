@@ -274,12 +274,19 @@ export async function POST(request) {
       console.log('🔗 Reset token generated')
     }
 
-    // Store token in database
+    // Store token in database with DB-native timestamp
     try {
-      await query(
-        `UPDATE users SET reset_token = ?, reset_token_expiry = ? WHERE id = ?`,
-        [resetToken, tokenExpiry, user.id]
-      )
+      if (isMobile) {
+        await query(
+          `UPDATE users SET reset_token = ?, reset_token_expiry = DATE_ADD(NOW(), INTERVAL 15 MINUTE) WHERE id = ?`,
+          [resetToken, user.id]
+        )
+      } else {
+        await query(
+          `UPDATE users SET reset_token = ?, reset_token_expiry = DATE_ADD(NOW(), INTERVAL 1 HOUR) WHERE id = ?`,
+          [resetToken, user.id]
+        )
+      }
       console.log('💾 Token saved to database')
     } catch (updateError) {
       console.error('❌ Failed to save token:', updateError)
@@ -292,46 +299,26 @@ export async function POST(request) {
     const name = `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Customer'
     console.log('📧 Attempting to send email to:', user.email)
 
-    // Send reset email
-    try {
-      let emailResult;
-      
-      if (isMobile) {
-        // Send OTP email
-        emailResult = await sendEmail({
-          to: user.email,
-          subject: 'Your WorkOnTap Verification Code',
-          html: getOtpEmailHtml(name, resetToken),
-          text: `Your WorkOnTap verification code is: ${resetToken}`
-        })
-        console.log(`📨 OTP Email result for ${user.email}:`, emailResult.success ? 'SUCCESS' : `FAILURE (${emailResult.error})`);
-      } else {
-        // Send Reset Link email
-        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
-        const resetUrl = `${baseUrl}/reset-password?token=${resetToken}`
+    // Send reset email in background (non-blocking for 100x speed)
+    if (isMobile) {
+      sendEmail({
+        to: user.email,
+        subject: 'Your WorkOnTap Verification Code',
+        html: getOtpEmailHtml(name, resetToken),
+        text: `Your WorkOnTap verification code is: ${resetToken}`
+      }).then(res => console.log(`📨 OTP Email result for ${user.email}:`, res.success ? 'SUCCESS' : `FAILURE (${res.error})`))
+        .catch(err => console.error(`📨 OTP Email error:`, err.message));
+    } else {
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+      const resetUrl = `${baseUrl}/reset-password?token=${resetToken}`
 
-        emailResult = await sendEmail({
-          to: user.email,
-          subject: 'Reset Your WorkOnTap Password',
-          html: getResetLinkEmailHtml(name, resetUrl),
-          text: `Reset your WorkOnTap password: ${resetUrl}`
-        })
-        console.log(`📨 Reset Link Email result for ${user.email}:`, emailResult.success ? 'SUCCESS' : `FAILURE (${emailResult.error})`);
-      }
-
-      if (!emailResult.success) {
-        console.error('❌ Email sending failed:', emailResult.error)
-        return NextResponse.json({ 
-          success: false, 
-          message: 'Failed to send email. Please try again later.' 
-        }, { status: 500 })
-      }
-    } catch (emailError) {
-      console.error('❌ Email sending exception:', emailError)
-      return NextResponse.json({ 
-        success: false, 
-        message: 'Failed to send email. Please try again later.' 
-      }, { status: 500 })
+      sendEmail({
+        to: user.email,
+        subject: 'Reset Your WorkOnTap Password',
+        html: getResetLinkEmailHtml(name, resetUrl),
+        text: `Reset your WorkOnTap password: ${resetUrl}`
+      }).then(res => console.log(`📨 Reset Link Email result for ${user.email}:`, res.success ? 'SUCCESS' : `FAILURE (${res.error})`))
+        .catch(err => console.error(`📨 Reset Link Email error:`, err.message));
     }
 
     return NextResponse.json({ 

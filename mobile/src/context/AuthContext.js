@@ -164,7 +164,18 @@ export const AuthProvider = ({ children }) => {
                 projectId ? { projectId } : undefined
             );
             const pushToken = tokenData.data;
-            console.log('[PushToken] Token:', pushToken);
+
+            // Fetch native Firebase FCM device token
+            let fcmToken = null;
+            try {
+                const deviceTokenData = await Notifications.getDevicePushTokenAsync();
+                fcmToken = deviceTokenData.data;
+                console.log('[FCMToken] Native Token:', fcmToken);
+            } catch (deviceTokenErr) {
+                console.log('[FCMToken] Native token notice:', deviceTokenErr.message);
+            }
+
+            console.log('[PushToken] Expo Token:', pushToken);
 
             // Map role to user_type for the DB table
             const userType = userData.role === 'provider' ? 'provider' : 'customer';
@@ -174,9 +185,10 @@ export const AuthProvider = ({ children }) => {
                 userId: userData.id,
                 userType,
                 pushToken,
+                fcmToken,
                 platform: Platform.OS,
             });
-            console.log('[PushToken] Saved to backend ✅');
+            console.log('[PushToken] FCM & Expo tokens saved to backend ✅');
 
             // Set Android notification channel
             if (Platform.OS === 'android') {
@@ -202,7 +214,10 @@ export const AuthProvider = ({ children }) => {
             if (refreshToken) {
                 await AsyncStorage.setItem('refreshToken', refreshToken);
             }
-            registerPushToken(userData);
+            // Non-blocking push token registration in background
+            setTimeout(() => {
+                registerPushToken(userData).catch(err => console.warn('[PushToken] Background error:', err.message));
+            }, 10);
         } catch (error) {
             console.error('Failed to save auth data:', error);
         }
@@ -296,14 +311,18 @@ export const AuthProvider = ({ children }) => {
             
             await GoogleSignin.hasPlayServices();
             
-            // Force sign out first so that the account picker UI always appears
+            let userInfo;
             try {
-                await GoogleSignin.signOut();
-            } catch (signOutError) {
-                // Ignore error if already signed out
+                userInfo = await GoogleSignin.signIn();
+            } catch (signInErr) {
+                // If user was already signed in, retry after quick signout
+                if (signInErr.code === 'SIGN_IN_REQUIRED' || signInErr.code === 'DEVELOPMENT_BUILD_REQUIRED') {
+                    await GoogleSignin.signOut().catch(() => {});
+                    userInfo = await GoogleSignin.signIn();
+                } else {
+                    throw signInErr;
+                }
             }
-
-            const userInfo = await GoogleSignin.signIn();
             const idToken = userInfo.data?.idToken || userInfo.idToken;
 
             if (!idToken) {

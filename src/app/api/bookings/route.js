@@ -222,7 +222,7 @@ export async function POST(request) {
       (async () => {
         try {
           const providers = await execute(
-            `SELECT id, push_token, phone, service_areas, skills FROM service_providers WHERE status = 'active'`
+            `SELECT id, phone, service_areas, skills FROM service_providers WHERE status = 'active'`
           );
           
           // Match providers

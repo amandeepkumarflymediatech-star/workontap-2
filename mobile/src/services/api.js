@@ -30,6 +30,9 @@ const processQueue = (error, token = null) => {
 };
 
 const request = async (endpoint, options = {}) => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
+
     try {
         const { params, token, ...fetchOptions } = options;
 
@@ -45,6 +48,7 @@ const request = async (endpoint, options = {}) => {
 
         const response = await fetch(url, {
             ...fetchOptions,
+            signal: controller.signal,
             headers: {
                 ...(!isFormData && { 'Content-Type': 'application/json' }),
                 // Attach Bearer token if available
@@ -55,6 +59,7 @@ const request = async (endpoint, options = {}) => {
                 ...fetchOptions.headers,
             },
         });
+        clearTimeout(timeoutId);
         
         // Determine content type to parse response correctly
         const contentType = response.headers.get('content-type');
@@ -145,6 +150,8 @@ const request = async (endpoint, options = {}) => {
         // Detailed error logging for debugging
         console.error(`🔥 [API Exception] ${endpoint}:`, error.message);
         throw error;
+    } finally {
+        clearTimeout(timeoutId);
     }
 };
 

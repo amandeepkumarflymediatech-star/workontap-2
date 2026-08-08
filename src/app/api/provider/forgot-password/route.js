@@ -364,15 +364,25 @@ export async function POST(request) {
 
     console.log('🔑 Reset token/OTP generated')
 
-    // Store token in database
+    // Store token in database with DB-native timestamp
     try {
-      await execute(
-        `UPDATE service_providers 
-         SET reset_token = ?, 
-             reset_token_expiry = ? 
-         WHERE id = ?`,
-        [resetToken, tokenExpiry, provider.id]
-      )
+      if (isMobile) {
+        await execute(
+          `UPDATE service_providers 
+           SET reset_token = ?, 
+               reset_token_expiry = DATE_ADD(NOW(), INTERVAL 15 MINUTE) 
+           WHERE id = ?`,
+          [resetToken, provider.id]
+        )
+      } else {
+        await execute(
+          `UPDATE service_providers 
+           SET reset_token = ?, 
+               reset_token_expiry = DATE_ADD(NOW(), INTERVAL 1 HOUR) 
+           WHERE id = ?`,
+          [resetToken, provider.id]
+        )
+      }
       console.log('💾 Token/OTP saved to database')
     } catch (updateError) {
       console.error('❌ Failed to save token:', updateError)

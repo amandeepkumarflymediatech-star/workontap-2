@@ -19,13 +19,24 @@ export async function POST(request) {
         console.log(`🔍 DIAGNOSTIC: OTP verification for [${cleanEmail}] with OTP [${cleanOtp}]`);
 
         // Check if provider exists with valid token
-        const providers = await execute(
+        let providers = await execute(
             `SELECT id FROM service_providers 
-        WHERE LOWER(email) = ? 
-        AND reset_token = ? 
-        AND reset_token_expiry > NOW()`,
+        WHERE LOWER(TRIM(email)) = ? 
+        AND CAST(reset_token AS CHAR) = ? 
+        AND (reset_token_expiry IS NULL OR reset_token_expiry > NOW())`,
             [cleanEmail, cleanOtp]
         )
+
+        // Fallback: Check users table if user registered in users table
+        if (providers.length === 0) {
+            providers = await execute(
+                `SELECT id FROM users 
+            WHERE LOWER(TRIM(email)) = ? 
+            AND CAST(reset_token AS CHAR) = ? 
+            AND (reset_token_expiry IS NULL OR reset_token_expiry > NOW())`,
+                [cleanEmail, cleanOtp]
+            )
+        }
 
         console.log(`📊 DIAGNOSTIC: Verification result - Rows found: ${providers.length}`);
 

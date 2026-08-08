@@ -87,11 +87,11 @@ const CreateBookingScreen = ({ navigation, route }) => {
     const [expandedDate, setExpandedDate] = useState(null);
 
     const timeSlots = ['08:00 - 10:00', '10:00 - 12:00', '12:00 - 14:00', '14:00 - 16:00', '16:00 - 18:00'];
-    
+
     const formatTimeSlot = (slot) => {
         const parts = slot.split('-');
         if (parts.length !== 2) return slot;
-        
+
         const formatTime = (timeStr) => {
             const [hrStr, minStr] = timeStr.trim().split(':');
             let hr = parseInt(hrStr, 10);
@@ -100,7 +100,7 @@ const CreateBookingScreen = ({ navigation, route }) => {
             if (hr === 0) hr = 12;
             return `${hr}:${minStr} ${ampm}`;
         };
-        
+
         return `${formatTime(parts[0])} – ${formatTime(parts[1])}`;
     };
 
@@ -177,7 +177,7 @@ const CreateBookingScreen = ({ navigation, route }) => {
                 Alert.alert('Selection Required', 'Please select 1 to 3 dates.');
                 return;
             }
-            
+
             const hasMissingSlots = dates.some(date => !selectedTimes[date] || selectedTimes[date].length === 0);
             if (hasMissingSlots) {
                 Alert.alert('Selection Required', 'Please select at least one time slot for each date.');
@@ -328,12 +328,12 @@ const CreateBookingScreen = ({ navigation, route }) => {
     const isSlotAvailable = (dateStr, slot) => {
         const now = new Date();
         const todayStr = now.toISOString().split('T')[0];
-        
+
         if (dateStr !== todayStr) return true;
 
         const currentHour = now.getHours();
         const slotStartHour = parseInt(slot.split(':')[0]);
-        
+
         return currentHour < slotStartHour;
     };
 
@@ -368,7 +368,7 @@ const CreateBookingScreen = ({ navigation, route }) => {
     );
 
     const renderStep1 = () => (
-        <ScrollView style={styles.stepContainer} showsVerticalScrollIndicator={false}>
+        <ScrollView style={styles.stepContainer} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
             <Text style={styles.sectionTitle}>Where do you need service?</Text>
 
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 2 }}>
@@ -380,6 +380,11 @@ const CreateBookingScreen = ({ navigation, route }) => {
                     ref={googlePlacesRef}
                     placeholder="Where do you need service?"
                     fetchDetails={true}
+                    minLength={2}
+                    debounce={300}
+                    disableScroll={true}
+                    listProps={{ scrollEnabled: false, nestedScrollEnabled: true }}
+                    onFail={(error) => console.warn('Google Places Autocomplete notice:', error)}
                     onPress={(data, details = null) => {
                         let city = '';
                         let postalCode = '';
@@ -387,6 +392,8 @@ const CreateBookingScreen = ({ navigation, route }) => {
                         if (details?.address_components) {
                             for (const component of details.address_components) {
                                 if (component.types.includes('locality')) {
+                                    city = component.long_name;
+                                } else if (!city && (component.types.includes('administrative_area_level_3') || component.types.includes('sublocality_level_1'))) {
                                     city = component.long_name;
                                 }
                                 if (component.types.includes('postal_code')) {
@@ -398,10 +405,10 @@ const CreateBookingScreen = ({ navigation, route }) => {
                         const lat = details?.geometry?.location?.lat || null;
                         const lng = details?.geometry?.location?.lng || null;
 
-                        setBookingData({ 
-                            ...bookingData, 
+                        setBookingData({
+                            ...bookingData,
                             address_line1: data.description || '',
-                            city,
+                            city: city || data.structured_formatting?.main_text || '',
                             postal_code: postalCode,
                             latitude: lat,
                             longitude: lng
@@ -411,7 +418,6 @@ const CreateBookingScreen = ({ navigation, route }) => {
                     query={{
                         key: GOOGLE_MAPS_API_KEY,
                         language: 'en',
-                        components: 'country:ca', // Adjust based on primary market
                     }}
                     styles={{
                         textInputContainer: {
@@ -513,7 +519,7 @@ const CreateBookingScreen = ({ navigation, route }) => {
             )}
 
             <Text style={styles.label}>Select Time Slot(s)</Text>
-            
+
             {(bookingData.job_date || []).length === 0 ? (
                 <View style={styles.emptySlotsContainer}>
                     <Text style={styles.emptySlotsText}>Please select a date first.</Text>
@@ -529,13 +535,13 @@ const CreateBookingScreen = ({ navigation, route }) => {
                             displayDate = `${months[parseInt(parts[1], 10) - 1]} ${parseInt(parts[2], 10)}, ${parts[0]}`;
                         }
                     }
-                    
+
                     const isExpanded = expandedDate === dateStr;
                     const activeSlotsCount = (selectedTimes[dateStr] || []).length;
-                    
+
                     return (
                         <View key={dateStr} style={[styles.dateSlotGroup, { overflow: 'hidden' }]}>
-                            <TouchableOpacity 
+                            <TouchableOpacity
                                 style={[styles.dateSlotGroupHeader, { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }]}
                                 onPress={() => setExpandedDate(isExpanded ? null : dateStr)}
                             >
@@ -549,13 +555,13 @@ const CreateBookingScreen = ({ navigation, route }) => {
                                 </View>
                                 <Ionicons name={isExpanded ? "chevron-up" : "chevron-down"} size={20} color="#64748b" />
                             </TouchableOpacity>
-                            
+
                             {isExpanded && (
                                 <View style={[styles.slotsGrid, { marginTop: 12 }]}>
                                     {timeSlots.map(slot => {
                                         const available = isSlotAvailable(dateStr, slot);
                                         const isActive = (selectedTimes[dateStr] || []).includes(slot);
-                                        
+
                                         return (
                                             <TouchableOpacity
                                                 key={slot}
@@ -700,13 +706,13 @@ const CreateBookingScreen = ({ navigation, route }) => {
                                     }
                                 }
                             }
-                            
+
                             const isExpanded = expandedDate === `review_${dateStr}`;
                             const activeSlotsCount = slots.length;
-                            
+
                             return (
                                 <View key={idx} style={[styles.dateSlotGroup, { overflow: 'hidden', padding: 0, marginBottom: 12, backgroundColor: '#f8fafc' }]}>
-                                    <TouchableOpacity 
+                                    <TouchableOpacity
                                         style={[{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 14 }]}
                                         onPress={() => setExpandedDate(isExpanded ? null : `review_${dateStr}`)}
                                         activeOpacity={0.7}
@@ -722,7 +728,7 @@ const CreateBookingScreen = ({ navigation, route }) => {
                                         </View>
                                         <Ionicons name={isExpanded ? "chevron-up" : "chevron-down"} size={20} color="#64748b" />
                                     </TouchableOpacity>
-                                    
+
                                     {isExpanded && slots.length > 0 && (
                                         <View style={[styles.slotsGrid, { paddingHorizontal: 14, paddingBottom: 14 }]}>
                                             {slots.map(slot => (
@@ -809,8 +815,8 @@ const CreateBookingScreen = ({ navigation, route }) => {
     );
 
     const renderStep5 = () => (
-        <ScrollView 
-            style={styles.stepContainer} 
+        <ScrollView
+            style={styles.stepContainer}
             contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }}
             showsVerticalScrollIndicator={false}
         >

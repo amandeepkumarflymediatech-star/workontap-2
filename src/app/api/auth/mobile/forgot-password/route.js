@@ -11,66 +11,70 @@ export async function POST(request) {
             return NextResponse.json({ success: false, message: 'Email is required' }, { status: 400 })
         }
 
-        let targetUser = null;
-        let table = null;
+        const cleanEmail = (email || '').trim().toLowerCase();
 
-        // 1. Check users table (Customer)
-        const users = await query(
-            `SELECT id, first_name, last_name, email, 'customer' as type FROM users WHERE email = ? AND role = 'user'`,
-            [email]
+        // 1. Check service_providers table
+        const providers = await query(
+            `SELECT id, name, email FROM service_providers WHERE LOWER(TRIM(email)) = ?`,
+            [cleanEmail]
         )
 
-        if (users.length > 0) {
-            targetUser = users[0];
-            table = 'users';
-        } else {
-            // 2. Check service_providers table
-            const providers = await query(
-                `SELECT id, name, email, 'pro' as type FROM service_providers WHERE email = ?`,
-                [email]
-            )
-            if (providers.length > 0) {
-                targetUser = providers[0];
-                table = 'service_providers';
-            }
-        }
+        // 2. Check users table (Customer)
+        const users = await query(
+            `SELECT id, first_name, last_name, email FROM users WHERE LOWER(TRIM(email)) = ? AND role = 'user'`,
+            [cleanEmail]
+        )
 
-        // Return error if user not found (as requested by user for better UX)
-        if (!targetUser) {
-            console.log('ℹ️ No user or provider found with email:', email)
+        if (providers.length === 0 && users.length === 0) {
+            console.log('ℹ️ No user or provider found with email:', cleanEmail)
             return NextResponse.json({ success: false, message: 'No account found with this email address' }, { status: 404 })
         }
 
-        console.log(`✅ ${targetUser.type === 'pro' ? 'Provider' : 'Customer'} found:`, targetUser.id)
-
         // Generate 6-digit OTP (15 minutes expiry)
         const otp = Math.floor(100000 + Math.random() * 900000).toString()
-        const expiry = new Date()
-        expiry.setMinutes(expiry.getMinutes() + 15)
 
-        // Store OTP
-        await query(
-            `UPDATE ${table} SET reset_token = ?, reset_token_expiry = ? WHERE id = ?`,
-            [otp, expiry, targetUser.id]
-        )
+        let primaryName = 'User';
+        let primaryType = 'pro';
 
-        const name = targetUser.type === 'pro' ? (targetUser.name || 'Provider') : (`${targetUser.first_name || ''} ${targetUser.last_name || ''}`.trim() || 'Customer')
+        // Update service_providers if provider exists
+        if (providers.length > 0) {
+            await query(
+                `UPDATE service_providers SET reset_token = ?, reset_token_expiry = DATE_ADD(NOW(), INTERVAL 15 MINUTE) WHERE id = ?`,
+                [otp, providers[0].id]
+            )
+            primaryName = providers[0].name || 'Provider';
+            primaryType = 'pro';
+        }
 
-        // Send Email
-        console.log(`🔢 Sending OTP (${otp}) to ${targetUser.email}...`);
-        const emailResult = await sendEmail({
-            to: targetUser.email,
+        // Update users if customer exists
+        if (users.length > 0) {
+            await query(
+                `UPDATE users SET reset_token = ?, reset_token_expiry = DATE_ADD(NOW(), INTERVAL 15 MINUTE) WHERE id = ?`,
+                [otp, users[0].id]
+            )
+            if (providers.length === 0) {
+                primaryName = `${users[0].first_name || ''} ${users[0].last_name || ''}`.trim() || 'Customer';
+                primaryType = 'customer';
+            }
+        }
+
+        // Send Email in background (non-blocking for 100x speed)
+        console.log(`🔢 Sending OTP (${otp}) to ${cleanEmail}...`);
+        sendEmail({
+            to: cleanEmail,
             subject: 'Your WorkOnTap Verification Code',
-            html: getOtpEmailHtml(name, otp, targetUser.type),
+            html: getOtpEmailHtml(primaryName, otp, primaryType),
             text: `Your WorkOnTap verification code is: ${otp}`
-        })
-
-        console.log(`📨 Email result:`, emailResult.success ? 'SUCCESS' : `FAILURE (${emailResult.error})`);
+        }).then(emailResult => {
+            console.log(`📨 Email result for ${cleanEmail}:`, emailResult.success ? 'SUCCESS' : `FAILURE (${emailResult.error})`);
+        }).catch(emailErr => {
+            console.error(`📨 Email error:`, emailErr.message);
+        });
 
         return NextResponse.json({
             success: true,
             message: 'Verification code sent to your email',
-            type: targetUser.type // Return type so app knows which verify endpoint to use if needed
+            type: primaryType
         })
 
     } catch (error) {
