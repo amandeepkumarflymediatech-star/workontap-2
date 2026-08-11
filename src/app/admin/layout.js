@@ -23,6 +23,8 @@ function getPageTitle(pathname) {
     '/admin/services': 'Services',
     '/admin/reviews': 'Reviews',
     '/admin/analytics': 'Analytics',
+    '/admin/seo': 'SEO Settings',
+    '/admin/blogs': 'Blogs',
     '/admin/settings': 'Settings',
   }
   return map[pathname] || 'Admin'

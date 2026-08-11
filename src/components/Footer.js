@@ -91,6 +91,7 @@ export default function Footer() {
               {[
                 { label: 'Home', href: '/' },
                 { label: 'Find A Trade', href: '/services' },
+                { label: 'Blog', href: '/blogs' },
                 { label: 'Help', href: '/help' },
                 { label: 'Data Deletion Request', href: '/data-deletion' },
                 { label: 'Privacy Policy', href: '/privacy' },

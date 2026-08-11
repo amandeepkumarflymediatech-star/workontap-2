@@ -6,6 +6,15 @@ const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET);
 export async function middleware(request) {
   const { pathname } = request.nextUrl;
 
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-pathname", pathname);
+
+  let response = NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  });
+
   // ✅ 1. Admin routes protection
   if (pathname.startsWith("/admin") && pathname !== "/admin/login") {
     const token = request.cookies.get("adminAuth")?.value;
@@ -17,7 +26,7 @@ export async function middleware(request) {
     try {
       await jwtVerify(token, JWT_SECRET);
     } catch {
-      const response = NextResponse.redirect(new URL("/admin/login", request.url));
+      response = NextResponse.redirect(new URL("/admin/login", request.url));
       response.cookies.set("adminAuth", "", { maxAge: 0 });
       return response;
     }
@@ -40,13 +49,17 @@ export async function middleware(request) {
     }
   }
 
-  return NextResponse.next();
+  return response;
 }
 
 export const config = {
   matcher: [
-    "/admin/:path*", 
-    "/provider/:path*",
-    "/api/admin/:path*", // Protect admin APIs specifically if needed
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico, sitemap.xml, robots.txt (metadata files)
+     */
+    "/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)",
   ],
 };
