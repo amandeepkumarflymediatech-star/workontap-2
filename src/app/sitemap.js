@@ -10,8 +10,13 @@ export default async function sitemap() {
     '',
     '/about',
     '/contact',
+    '/services',
     '/blogs',
     '/faq',
+    '/help',
+    '/terms',
+    '/privacy',
+    '/data-deletion'
   ]
 
   const sitemapEntries = []
@@ -60,7 +65,36 @@ export default async function sitemap() {
     console.error('Error fetching SEO settings for sitemap:', error)
   }
 
-  // 3. Fetch all Blogs (Only Published)
+  // 3. Fetch all Services (Only Active)
+  try {
+    const services = await db.query('SELECT * FROM services WHERE is_active = 1')
+    const activeServices = services || []
+    
+    for (const service of activeServices) {
+      if (!service.slug && !service.id) continue
+
+      const servicePath = `/services/${service.slug || service.id}`
+      const fullUrl = `${baseUrl}${servicePath}`
+      
+      // Check if entry already exists
+      const exists = sitemapEntries.some(
+        (entry) => entry.url.replace(/\/$/, '') === fullUrl.replace(/\/$/, '')
+      )
+
+      if (!exists) {
+        sitemapEntries.push({
+          url: fullUrl,
+          lastModified: service.updated_at ? new Date(service.updated_at) : new Date(),
+          changeFrequency: 'weekly',
+          priority: 0.8,
+        })
+      }
+    }
+  } catch (error) {
+    console.error('Error fetching Services for sitemap:', error)
+  }
+
+  // 4. Fetch all Blogs (Only Published)
   try {
     const blogs = await db.query('SELECT * FROM blogs WHERE is_published = 1')
     const publishedBlogs = blogs || []
@@ -91,3 +125,4 @@ export default async function sitemap() {
 
   return sitemapEntries
 }
+
