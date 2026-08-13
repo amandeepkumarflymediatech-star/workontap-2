@@ -96,15 +96,15 @@ export default function ServiceLocationClientPage({
           <div className="lg:col-span-2">
             
             {/* Image Banner */}
-            <div className="mb-6 md:mb-8 rounded-2xl overflow-hidden shadow-lg border border-slate-100 relative">
+            <div className="mb-6 md:mb-8 rounded-2xl overflow-hidden shadow-sm border border-slate-100 relative bg-slate-50">
               {service.image_url ? (
                 <img
                   src={service.image_url}
                   alt={`${service.name} in ${locationName}`}
-                  className="w-full h-64 sm:h-80 md:h-96 object-cover"
+                  className="w-full h-auto max-h-[500px] object-contain"
                 />
               ) : (
-                <div className="h-64 sm:h-80 md:h-96 flex items-center justify-center bg-gradient-to-br from-[#16A34A]/10 to-[#16A34A]/20">
+                <div className="aspect-[16/9] w-full flex items-center justify-center bg-gradient-to-br from-[#16A34A]/10 to-[#16A34A]/20">
                   <span className="text-8xl sm:text-9xl">
                     {service.category_icon ? <Icon name={service.category_icon} /> : <Icon name="wrench" />}
                   </span>
@@ -212,7 +212,7 @@ export default function ServiceLocationClientPage({
 
           {/* Right Booking Sidebar */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-xl sticky top-6">
+            <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-xl sticky top-28 z-10">
               <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-4">
                 <div>
                   <span className="text-xs text-gray-500 font-medium uppercase tracking-wider">Starting From</span>
@@ -262,10 +262,10 @@ export default function ServiceLocationClientPage({
               {/* Book Button */}
               <button
                 onClick={handleBookNow}
-                className="w-full py-4 bg-[#16A34A] hover:bg-[#15803D] text-white text-base font-bold rounded-xl shadow-lg hover:shadow-emerald-200 transition-all flex items-center justify-center gap-2 mb-4"
+                className="w-full py-3.5 px-4 bg-[#16A34A] hover:bg-[#15803D] text-white font-bold rounded-xl shadow-lg hover:shadow-emerald-200 transition-all flex items-center justify-center gap-2 mb-4"
               >
-                <span>Book {service.name} in {locationName}</span>
-                <span>→</span>
+                <span className="text-center text-sm lg:text-base leading-tight">Book {service.name} in {locationName}</span>
+                <span className="shrink-0">→</span>
               </button>
 
               <div className="space-y-2.5 text-xs text-gray-600 border-t border-gray-100 pt-4">
