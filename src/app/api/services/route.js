@@ -20,9 +20,17 @@ export async function GET(request) {
         s.*,
         sc.name as category_name,
         sc.slug as category_slug,
-        sc.icon as category_icon
+        sc.icon as category_icon,
+        seo.meta_title as seo_meta_title,
+        seo.meta_description as seo_meta_description,
+        seo.keywords as seo_keywords,
+        seo.canonical_url as seo_canonical_url,
+        seo.og_title as seo_og_title,
+        seo.og_description as seo_og_description,
+        seo.og_image as seo_og_image
       FROM services s
       LEFT JOIN service_categories sc ON s.category_id = sc.id
+      LEFT JOIN seo_settings seo ON seo.page_name = CONCAT('/services/', s.slug)
       WHERE s.is_active = 1
     `
     const params = []
