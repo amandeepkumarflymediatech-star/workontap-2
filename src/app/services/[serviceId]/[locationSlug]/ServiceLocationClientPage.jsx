@@ -1,0 +1,291 @@
+'use client';
+
+import Link from 'next/link';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
+import Icon from '@/components/Icon';
+import AutocompleteComponent from 'react-google-autocomplete';
+
+const Autocomplete = AutocompleteComponent.default || AutocompleteComponent;
+
+export default function ServiceLocationClientPage({
+  service,
+  serviceLocation,
+  serviceId,
+  locationSlug,
+  locationName,
+  allLocations = []
+}) {
+  const router = useRouter();
+  const [selectedAddress, setSelectedAddress] = useState(`${locationName}, BC, Canada`);
+  const [addressError, setAddressError] = useState('');
+
+  useEffect(() => {
+    // If address was saved previously in session, use it if it matches
+    const savedAddress = sessionStorage.getItem('userAddress');
+    if (savedAddress && savedAddress.toLowerCase().includes(locationName.toLowerCase())) {
+      setSelectedAddress(savedAddress);
+    }
+  }, [locationName]);
+
+  const handleBookNow = () => {
+    if (!selectedAddress || selectedAddress.trim() === '') {
+      setAddressError('Please confirm your service address');
+      return;
+    }
+
+    sessionStorage.setItem('selectedServiceId', service?.id);
+    sessionStorage.setItem('selectedServiceName', service?.name);
+    sessionStorage.setItem('selectedServicePrice', service?.base_price);
+    sessionStorage.setItem('userAddress', selectedAddress);
+    sessionStorage.setItem('selectedLocationName', locationName);
+    sessionStorage.setItem('selectedLocationSlug', locationSlug);
+    sessionStorage.setItem('userCity', locationName);
+
+    router.push(`/booking/schedule?service=${service?.id}`);
+  };
+
+  const useCases = service?.use_cases
+    ? service.use_cases.split(',').map(item => item.trim()).filter(item => item)
+    : [];
+
+  const headingText = serviceLocation?.custom_heading || `#1 Rated ${service?.name || 'Home'} Services in ${locationName}, BC`;
+  const introText = serviceLocation?.custom_intro || `Looking for top-rated, background-checked ${service?.name?.toLowerCase() || 'home maintenance'} specialists in ${locationName}? WorkOnTap connects you with verified local pros who deliver fast, high-quality service at transparent upfront rates.`;
+
+  if (!service) {
+    return (
+      <div className="min-h-screen bg-white font-sans">
+        <Header />
+        <div className="container mx-auto px-6 py-20 text-center max-w-xl">
+          <h2 className="text-3xl font-extrabold text-gray-900 mb-4">Service Not Found</h2>
+          <p className="text-gray-600 mb-8">We couldn't find the service you're looking for in {locationName}.</p>
+          <Link href="/services" className="inline-flex items-center px-6 py-3 bg-[#16A34A] text-white font-semibold rounded-xl hover:bg-[#15803D] transition">
+            Browse All Services
+          </Link>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-white font-sans antialiased">
+      <Header />
+
+      {/* Breadcrumb */}
+      <div className="bg-gray-50 border-b border-gray-200 py-3">
+        <div className="container mx-auto px-6 max-w-7xl">
+          <div className="flex items-center text-sm text-gray-600 flex-wrap gap-1">
+            <Link href="/" className="hover:text-[#16A34A] transition">Home</Link>
+            <span>›</span>
+            <Link href="/services" className="hover:text-[#16A34A] transition">Services</Link>
+            <span>›</span>
+            <Link href={`/services/${service.slug}`} className="hover:text-[#16A34A] transition">{service.name}</Link>
+            <span>›</span>
+            <span className="text-gray-900 font-medium">{locationName}, BC</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="container mx-auto px-6 max-w-7xl py-8 md:py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
+          
+          {/* Main Left Content Column */}
+          <div className="lg:col-span-2">
+            
+            {/* Image Banner */}
+            <div className="mb-6 md:mb-8 rounded-2xl overflow-hidden shadow-lg border border-slate-100 relative">
+              {service.image_url ? (
+                <img
+                  src={service.image_url}
+                  alt={`${service.name} in ${locationName}`}
+                  className="w-full h-64 sm:h-80 md:h-96 object-cover"
+                />
+              ) : (
+                <div className="h-64 sm:h-80 md:h-96 flex items-center justify-center bg-gradient-to-br from-[#16A34A]/10 to-[#16A34A]/20">
+                  <span className="text-8xl sm:text-9xl">
+                    {service.category_icon ? <Icon name={service.category_icon} /> : <Icon name="wrench" />}
+                  </span>
+                </div>
+              )}
+              <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-md px-4 py-2 rounded-full text-xs sm:text-sm font-bold text-[#16A34A] shadow-md border border-emerald-100">
+                📍 Serving {locationName}, BC
+              </div>
+            </div>
+
+            {/* Title & Intro */}
+            <div className="mb-8">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 mb-4 leading-tight">
+                {headingText}
+              </h1>
+              <p className="text-lg text-gray-700 leading-relaxed">
+                {introText}
+              </p>
+            </div>
+
+            {/* Why Choose Us Grid */}
+            <div className="mb-10 bg-slate-50 rounded-2xl p-6 border border-slate-200">
+              <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <span>🛡️</span> Why Hire {service.name} Experts in {locationName} via WorkOnTap?
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex items-start gap-3 p-3 bg-white rounded-xl border border-gray-100 shadow-sm">
+                  <span className="text-2xl">✅</span>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 text-sm">Verified Local Professionals</h3>
+                    <p className="text-xs text-gray-600">Background-checked and rated experts serving {locationName}.</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 p-3 bg-white rounded-xl border border-gray-100 shadow-sm">
+                  <span className="text-2xl">💰</span>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 text-sm">Upfront Pricing</h3>
+                    <p className="text-xs text-gray-600">No hidden fees. Starting from ${parseFloat(service.base_price).toFixed(2)}.</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 p-3 bg-white rounded-xl border border-gray-100 shadow-sm">
+                  <span className="text-2xl">⚡</span>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 text-sm">Fast Dispatch</h3>
+                    <p className="text-xs text-gray-600">Get a confirmed pro scheduled to your address quickly.</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 p-3 bg-white rounded-xl border border-gray-100 shadow-sm">
+                  <span className="text-2xl">⭐</span>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 text-sm">Satisfaction Guarantee</h3>
+                    <p className="text-xs text-gray-600">Protected by WorkOnTap quality guarantee.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Description & Use Cases */}
+            {service.description && (
+              <div className="mb-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-3">About this Service in {locationName}</h2>
+                <div className="prose max-w-none text-gray-700 leading-relaxed">
+                  {service.description}
+                </div>
+              </div>
+            )}
+
+            {useCases.length > 0 && (
+              <div className="mb-10">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">What We Help With in {locationName}</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {useCases.map((useCase, idx) => (
+                    <div key={idx} className="flex items-center gap-3 p-3.5 bg-emerald-50/60 rounded-xl border border-emerald-100 text-gray-800 font-medium text-sm">
+                      <span className="text-[#16A34A] font-bold">✓</span> {useCase}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Nearby Metro Vancouver Locations for Interlinking */}
+            {allLocations.length > 0 && (
+              <div className="mt-12 pt-8 border-t border-gray-200">
+                <h2 className="text-xl font-bold text-gray-900 mb-4">
+                  {service.name} Services in Nearby Metro Vancouver Cities
+                </h2>
+                <div className="flex flex-wrap gap-2">
+                  {allLocations.map((loc, idx) => {
+                    if (loc.location_slug === locationSlug) return null;
+                    return (
+                      <Link
+                        key={idx}
+                        href={`/services/${service.slug}/${loc.location_slug}`}
+                        className="px-3.5 py-1.5 bg-gray-100 hover:bg-[#16A34A] hover:text-white text-gray-700 rounded-lg text-xs font-medium transition"
+                      >
+                        {service.name} in {loc.location_name}
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+          </div>
+
+          {/* Right Booking Sidebar */}
+          <div className="lg:col-span-1">
+            <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-xl sticky top-6">
+              <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-4">
+                <div>
+                  <span className="text-xs text-gray-500 font-medium uppercase tracking-wider">Starting From</span>
+                  <div className="text-3xl font-black text-gray-900">
+                    ${parseFloat(service.base_price).toFixed(2)}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <span className="inline-block px-3 py-1 bg-emerald-100 text-[#16A34A] text-xs font-bold rounded-full">
+                    {locationName}, BC
+                  </span>
+                </div>
+              </div>
+
+              {/* Address Picker */}
+              <div className="mb-5">
+                <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wider">
+                  Service Location
+                </label>
+                <div className="relative">
+                  <Autocomplete
+                    apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''}
+                    onPlaceSelected={(place) => {
+                      if (place && place.formatted_address) {
+                        setSelectedAddress(place.formatted_address);
+                        setAddressError('');
+                      }
+                    }}
+                    options={{
+                      types: ['address'],
+                      componentRestrictions: { country: ['ca', 'us'] },
+                    }}
+                    defaultValue={selectedAddress}
+                    onChange={(e) => {
+                      setSelectedAddress(e.target.value);
+                      if (addressError) setAddressError('');
+                    }}
+                    placeholder={`Enter your address in ${locationName}...`}
+                    className={`w-full px-4 py-3 rounded-xl border ${addressError ? 'border-red-500' : 'border-gray-300'} text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#16A34A] focus:border-transparent transition shadow-sm`}
+                  />
+                </div>
+                {addressError && (
+                  <p className="text-xs text-red-500 mt-1 font-medium">{addressError}</p>
+                )}
+              </div>
+
+              {/* Book Button */}
+              <button
+                onClick={handleBookNow}
+                className="w-full py-4 bg-[#16A34A] hover:bg-[#15803D] text-white text-base font-bold rounded-xl shadow-lg hover:shadow-emerald-200 transition-all flex items-center justify-center gap-2 mb-4"
+              >
+                <span>Book {service.name} in {locationName}</span>
+                <span>→</span>
+              </button>
+
+              <div className="space-y-2.5 text-xs text-gray-600 border-t border-gray-100 pt-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-[#16A34A] font-bold">✓</span> Instant Confirmation
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[#16A34A] font-bold">✓</span> Direct Contact with Verified Pro
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[#16A34A] font-bold">✓</span> Pay Securely After Job Completion
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <Footer />
+    </div>
+  );
+}

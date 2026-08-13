@@ -199,7 +199,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from 'src/context/AuthContext'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { X, MessageCircle, Calendar, Clock, Eye, ChevronRight, Package } from 'lucide-react'
+import { X, MessageCircle, Calendar, Clock, Eye, ChevronRight, Package, MapPin } from 'lucide-react'
 import Header from '@/components/Header'
 import ChatBox from '@/components/ChatBox'
 
@@ -391,7 +391,7 @@ export default function MyBookings() {
                         </p>
                       </div>
 
-                      {/* Date & time */}
+                      {/* Date & time & Location */}
                       <div className="flex flex-wrap items-center gap-3 text-xs text-gray-400 mb-4">
                         <span className="flex items-center gap-1.5">
                           <Calendar className="w-3.5 h-3.5" />
@@ -401,6 +401,12 @@ export default function MyBookings() {
                           <span className="flex items-center gap-1.5">
                             <Clock className="w-3.5 h-3.5" />
                             {formatSlot(booking.job_time_slot)}
+                          </span>
+                        )}
+                        {(booking.address_line1 || booking.city) && (
+                          <span className="flex items-center gap-1 text-[#16A34A] font-semibold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">
+                            <MapPin className="w-3.5 h-3.5" />
+                            {booking.address_line1 ? `${booking.address_line1}${booking.city ? `, ${booking.city}` : ''}` : booking.city}
                           </span>
                         )}
                       </div>

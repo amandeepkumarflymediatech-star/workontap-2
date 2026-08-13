@@ -3,24 +3,26 @@ import { NextResponse } from 'next/server'
 import { execute, query } from '@/lib/db'
 
 // GET all services
-export async function GET(request) {
-  console.log('GET /api/services called');
+export async function GET(request) { 
   try {
     const { searchParams } = new URL(request.url)
     const id = searchParams.get('id')
     const categoryId = searchParams.get('category_id') || searchParams.get('categoryId')
     const slug = searchParams.get('slug')
+    const location = searchParams.get('location') || searchParams.get('locationSlug')
     const homepage = searchParams.get('homepage')
     const limitParams = searchParams.get('limit')
 
-    console.log('Filters:', { id, categoryId, slug, homepage, limitParams });
-
-    let sql = `
-      SELECT 
-        s.*,
-        sc.name as category_name,
-        sc.slug as category_slug,
-        sc.icon as category_icon,
+    const locationFields = location ? `
+        sl.location_name,
+        sl.location_slug,
+        COALESCE(sl.meta_title, seo.meta_title) as seo_meta_title,
+        COALESCE(sl.meta_description, seo.meta_description) as seo_meta_description,
+        COALESCE(sl.keywords, seo.keywords) as seo_keywords,
+        COALESCE(sl.canonical_url, seo.canonical_url) as seo_canonical_url,
+        sl.custom_heading,
+        sl.custom_intro
+    ` : `
         seo.meta_title as seo_meta_title,
         seo.meta_description as seo_meta_description,
         seo.keywords as seo_keywords,
@@ -28,12 +30,25 @@ export async function GET(request) {
         seo.og_title as seo_og_title,
         seo.og_description as seo_og_description,
         seo.og_image as seo_og_image
+    `;
+
+    let sql = `
+      SELECT 
+        s.*,
+        sc.name as category_name,
+        sc.slug as category_slug,
+        sc.icon as category_icon,
+        ${locationFields}
       FROM services s
       LEFT JOIN service_categories sc ON s.category_id = sc.id
       LEFT JOIN seo_settings seo ON seo.page_name = CONCAT('/services/', s.slug)
+      ${location ? 'LEFT JOIN service_locations sl ON sl.service_id = s.id AND (sl.location_slug = ? OR LOWER(sl.location_name) = ?)' : ''}
       WHERE s.is_active = 1
     `
     const params = []
+    if (location) {
+      params.push(location.toLowerCase(), location.toLowerCase())
+    }
 
     if (id) {
       sql += ' AND s.id = ?'

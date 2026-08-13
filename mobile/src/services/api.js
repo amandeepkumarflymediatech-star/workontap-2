@@ -42,7 +42,7 @@ const request = async (endpoint, options = {}) => {
             url += `?${new URLSearchParams(params).toString()}`;
         }
 
-        console.log(`🌐 [API Request] ${fetchOptions.method || 'GET'} ${endpoint}`);
+   
 
         const isFormData = fetchOptions.body instanceof FormData;
 

@@ -60,7 +60,30 @@ export async function getSeoForPath(rawPathname) {
     }
   }
 
-  // 4. Fetch Service SEO if visiting a service detail page (/services/:id_or_slug)
+  let serviceLocationSeo = null
+
+  // 4. Check for nested Service Location path (/services/:serviceId/:locationSlug)
+  const serviceLocParts = pathname.split('/').filter(Boolean)
+  if (serviceLocParts.length === 3 && serviceLocParts[0] === 'services') {
+    const serviceSlug = serviceLocParts[1]
+    const locationSlug = serviceLocParts[2]
+    try {
+      const rows = await db.query(
+        `SELECT sl.*, s.name as service_name
+         FROM service_locations sl
+         JOIN services s ON sl.service_id = s.id
+         WHERE (s.slug = ? OR s.id = ?) AND (sl.location_slug = ? OR LOWER(sl.location_name) = ?) AND sl.is_active = 1 LIMIT 1`,
+        [serviceSlug, serviceSlug, locationSlug, locationSlug.replace(/-/g, ' ')]
+      )
+      if (rows && rows.length > 0) {
+        serviceLocationSeo = rows[0]
+      }
+    } catch (e) {
+      console.error('Error fetching service location SEO:', e)
+    }
+  }
+
+  // 5. Fetch Service SEO if visiting a service detail page (/services/:id_or_slug)
   if (pathname.includes('/services/') && lastSegment && lastSegment !== 'services') {
     try {
       const rows = await db.query(
@@ -74,6 +97,7 @@ export async function getSeoForPath(rawPathname) {
   }
 
   const title = 
+    serviceLocationSeo?.meta_title ||
     blogSeo?.meta_title || 
     blogSeo?.title || 
     (serviceSeo ? `${serviceSeo.name} | WorkOnTap` : null) || 
@@ -85,6 +109,7 @@ export async function getSeoForPath(rawPathname) {
   const cleanServiceDesc = rawServiceDesc ? rawServiceDesc.replace(/<[^>]*>?/gm, '').slice(0, 160) : null
 
   const description = 
+    serviceLocationSeo?.meta_description ||
     blogSeo?.meta_description || 
     cleanServiceDesc || 
     pageSeo?.meta_description || 
@@ -92,6 +117,7 @@ export async function getSeoForPath(rawPathname) {
     'Book trusted local pros for your home maintenance needs'
 
   const keywords = 
+    serviceLocationSeo?.keywords ||
     blogSeo?.keywords || 
     (serviceSeo ? `${serviceSeo.name}, home service, workontap` : null) || 
     pageSeo?.keywords || 
@@ -100,6 +126,7 @@ export async function getSeoForPath(rawPathname) {
 
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://workontap.com'
   const canonical = 
+    serviceLocationSeo?.canonical_url ||
     blogSeo?.canonical_url || 
     pageSeo?.canonical_url || 
     globalSeo?.canonical_url || 

@@ -40,7 +40,9 @@ export default function BookingConfirmPage() {
       setDetailsData(details);
       if (details.address) setAddress(details.address);
       
-      setCity(sessionStorage.getItem('userCity') || '');
+      const locName = sessionStorage.getItem('selectedLocationName');
+      const userCity = sessionStorage.getItem('userCity');
+      setCity(userCity || locName || '');
       setPostalCode(sessionStorage.getItem('userPostalCode') || '');
       setLat(sessionStorage.getItem('userLat') ? parseFloat(sessionStorage.getItem('userLat')) : null);
       setLng(sessionStorage.getItem('userLng') ? parseFloat(sessionStorage.getItem('userLng')) : null);

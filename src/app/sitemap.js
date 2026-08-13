@@ -123,6 +123,39 @@ export default async function sitemap() {
     console.error('Error fetching Blogs for sitemap:', error)
   }
 
+  // 5. Fetch all Active Service Locations for Location-based SEO Pages
+  try {
+    const serviceLocs = await db.query(
+      `SELECT sl.location_slug, s.slug as service_slug, sl.updated_at
+       FROM service_locations sl
+       JOIN services s ON sl.service_id = s.id
+       WHERE sl.is_active = 1 AND s.is_active = 1`
+    )
+    const activeLocs = serviceLocs || []
+    
+    for (const item of activeLocs) {
+      if (!item.service_slug || !item.location_slug) continue
+
+      const locPath = `/services/${item.service_slug}/${item.location_slug}`
+      const fullUrl = `${baseUrl}${locPath}`
+      
+      const exists = sitemapEntries.some(
+        (entry) => entry.url.replace(/\/$/, '') === fullUrl.replace(/\/$/, '')
+      )
+
+      if (!exists) {
+        sitemapEntries.push({
+          url: fullUrl,
+          lastModified: item.updated_at ? new Date(item.updated_at) : new Date(),
+          changeFrequency: 'weekly',
+          priority: 0.8,
+        })
+      }
+    }
+  } catch (error) {
+    console.error('Error fetching Service Locations for sitemap:', error)
+  }
+
   return sitemapEntries
 }
 

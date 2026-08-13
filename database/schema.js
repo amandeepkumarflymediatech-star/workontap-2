@@ -517,6 +517,69 @@ const tables = [
     is_active TINYINT(1) DEFAULT 1,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  )`,
+
+  // Table 25: service_locations
+  `CREATE TABLE IF NOT EXISTS service_locations (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    service_id INT NOT NULL,
+    location_name VARCHAR(200) NOT NULL,
+    location_slug VARCHAR(200) NOT NULL,
+    slug VARCHAR(255) NOT NULL UNIQUE,
+    meta_title VARCHAR(255),
+    meta_description TEXT,
+    keywords TEXT,
+    canonical_url VARCHAR(255),
+    custom_heading VARCHAR(255),
+    custom_intro TEXT,
+    is_active TINYINT(1) DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (service_id) REFERENCES services(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_service_location (service_id, location_slug),
+    INDEX idx_sl_loc_slug (location_slug),
+    INDEX idx_sl_active (is_active)
+  )`,
+
+  // Table 26: seo_settings
+  `CREATE TABLE IF NOT EXISTS seo_settings (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    page_name VARCHAR(100) UNIQUE NOT NULL,
+    meta_title VARCHAR(255),
+    meta_description TEXT,
+    keywords TEXT,
+    canonical_url VARCHAR(255),
+    og_title VARCHAR(255),
+    og_description TEXT,
+    og_image VARCHAR(255),
+    header_scripts TEXT,
+    footer_scripts TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  )`,
+
+  // Table 27: blogs
+  `CREATE TABLE IF NOT EXISTS blogs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    slug VARCHAR(255) UNIQUE NOT NULL,
+    content TEXT,
+    author VARCHAR(100),
+    image_url VARCHAR(255),
+    meta_title VARCHAR(255),
+    meta_description TEXT,
+    keywords TEXT,
+    is_published BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  )`,
+
+  // Table 28: system_settings
+  `CREATE TABLE IF NOT EXISTS system_settings (
+    \`key\` VARCHAR(191) PRIMARY KEY,
+    \`value\` TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
   )`
 ];
 
@@ -565,6 +628,8 @@ const alterations = [
   { table: 'bookings', column: 'latitude', sql: 'ALTER TABLE bookings ADD COLUMN latitude DECIMAL(10,8)' },
   { table: 'bookings', column: 'longitude', sql: 'ALTER TABLE bookings ADD COLUMN longitude DECIMAL(11,8)' },
   { table: 'bookings', column: 'cluster', sql: 'ALTER TABLE bookings ADD COLUMN cluster VARCHAR(100)' },
+  { table: 'bookings', column: 'idx_status_provider_created', sql: 'CREATE INDEX idx_status_provider_created ON bookings(status, provider_id, created_at)' },
+  { table: 'bookings', column: 'idx_city_cluster', sql: 'CREATE INDEX idx_city_cluster ON bookings(city, cluster)' },
   
   // Service Areas
   { table: 'service_areas', column: 'cities', sql: 'ALTER TABLE service_areas ADD COLUMN cities JSON AFTER is_active' },
@@ -810,7 +875,8 @@ async function runMigration() {
       'booking_time_logs', 'job_photos', 'provider_reviews', 'invoices',
       'provider_payouts', 'disputes', 'mobile_auth_users', 
       'notifications', 'deletion_requests', 'service_areas',
-      'states', 'districts', 'cities', 'skills'
+      'states', 'districts', 'cities', 'skills',
+      'service_locations', 'seo_settings', 'blogs', 'system_settings'
     ];
 
     let totalColumns = 0;
@@ -846,7 +912,7 @@ async function runMigration() {
     console.log('✅ Migration completed successfully!');
     console.log('='.repeat(60));
     console.log(`   Database: ${DB_NAME}`);
-    console.log(`   Tables:   ${tableQueries.length}/23`);
+    console.log(`   Tables:   ${tableQueries.length}/28`);
     console.log(`   Total Columns: ${totalColumns}`);
     console.log('   ✓ UNIQUE constraint added to users.phone column');
     console.log('='.repeat(60) + '\n');

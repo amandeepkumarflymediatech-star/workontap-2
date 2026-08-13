@@ -68,9 +68,31 @@ function Pagination({ total, page, setPage }) {
   );
 }
 
+const METRO_VANCOUVER_LOCATIONS = [
+  { name: 'All Locations', slug: 'all' },
+  { name: 'Surrey', slug: 'surrey' },
+  { name: 'Burnaby', slug: 'burnaby' },
+  { name: 'Richmond', slug: 'richmond' },
+  { name: 'Coquitlam', slug: 'coquitlam' },
+  { name: 'Langley Township', slug: 'langley-township' },
+  { name: 'Delta', slug: 'delta' },
+  { name: 'Maple Ridge', slug: 'maple-ridge' },
+  { name: 'North Vancouver District', slug: 'north-vancouver-district' },
+  { name: 'New Westminster', slug: 'new-westminster' },
+  { name: 'Port Coquitlam', slug: 'port-coquitlam' },
+  { name: 'North Vancouver City', slug: 'north-vancouver-city' },
+  { name: 'West Vancouver', slug: 'west-vancouver' },
+  { name: 'Port Moody', slug: 'port-moody' },
+  { name: 'Langley City', slug: 'langley-city' },
+  { name: 'Pitt Meadows', slug: 'pitt-meadows' },
+  { name: 'White Rock', slug: 'white-rock' },
+  { name: 'Metro Vancouver', slug: 'metro-vancouver' }
+];
+
 export default function ServicesPage() {
   const router = useRouter();
   const [activeCategory, setActiveCategory] = useState('all');
+  const [selectedLocation, setSelectedLocation] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [services, setServices] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -130,7 +152,7 @@ export default function ServicesPage() {
       console.log('Fetching services...');
       const servicesRes = await fetch('/api/services');
       console.log('Services status:', servicesRes.status);
-      
+
       console.log('Fetching categories...');
       const categoriesRes = await fetch('/api/categories');
       console.log('Categories status:', categoriesRes.status);
@@ -282,8 +304,50 @@ export default function ServicesPage() {
         </div>
       </section>
 
+      {/* Location Selector Bar */}
+      <section className="bg-white border-b border-slate-100 py-4">
+        <div className="container mx-auto px-6 max-w-7xl">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-2 text-slate-700 font-bold text-sm whitespace-nowrap">
+              <span className="text-[#16A34A] text-lg">📍</span>
+              <span>Select Service Location:</span>
+            </div>
+
+            {/* Location Dropdown & Quick Pills */}
+            <div className="flex items-center gap-3 w-full sm:w-auto overflow-x-auto no-scrollbar pb-1">
+              <select
+                value={selectedLocation}
+                onChange={(e) => setSelectedLocation(e.target.value)}
+                className="bg-slate-50 border border-slate-200 text-slate-800 font-semibold text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#16A34A] cursor-pointer"
+              >
+                {METRO_VANCOUVER_LOCATIONS.map(loc => (
+                  <option key={loc.slug} value={loc.slug}>
+                    {loc.slug === 'all' ? 'All Metro Vancouver Locations' : `📍 ${loc.name}, BC`}
+                  </option>
+                ))}
+              </select>
+
+              <div className="hidden lg:flex items-center gap-2 overflow-x-auto no-scrollbar">
+                {METRO_VANCOUVER_LOCATIONS.slice(1, 7).map(loc => (
+                  <button
+                    key={loc.slug}
+                    onClick={() => setSelectedLocation(loc.slug)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${selectedLocation === loc.slug
+                        ? 'bg-[#16A34A] text-white shadow-sm'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      }`}
+                  >
+                    {loc.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Category Navigation - Horizontal Scroll on small screens */}
-      <section id="services-listing" className=" top-[80px] z-30  backdrop-blur-xl border-y border-slate-100 py-6">
+      <section id="services-listing" className=" top-[80px] z-30  backdrop-blur-xl border-b border-slate-100 py-6">
         <div className="container mx-auto px-6 max-w-7xl">
           <div className="flex flex-wrap gap-2 md:gap-3 justify-center items-center gap-3 overflow-x-auto no-scrollbar pb-1 md:justify-center">
             {filterCategories.map((category) => (
@@ -321,9 +385,14 @@ export default function ServicesPage() {
                   ? searchTerm ? `Results for "${searchTerm}"` : 'All Services'
                   : categories.find(c => c.id === parseInt(activeCategory))?.name
                 }
+                {selectedLocation !== 'all' && (
+                  <span className="text-[#16A34A] ml-2">
+                    in {METRO_VANCOUVER_LOCATIONS.find(l => l.slug === selectedLocation)?.name}, BC
+                  </span>
+                )}
               </h2>
               <p className="text-slate-500 mt-2">
-                Showing {filteredServices.length} vetted services in your area
+                Showing {filteredServices.length} vetted services {selectedLocation !== 'all' ? `in ${METRO_VANCOUVER_LOCATIONS.find(l => l.slug === selectedLocation)?.name}, BC` : 'in your area'}
               </p>
             </div>
           </div>
@@ -331,12 +400,16 @@ export default function ServicesPage() {
           {filteredServices.length > 0 ? (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                {pagedServices.map((service) => {
+                {pagedServices.map((service, idx) => {
                   const category = categories.find(c => c.id === service.category_id);
+                  const targetUrl = selectedLocation !== 'all'
+                    ? `/services/${service.slug}/${selectedLocation}`
+                    : `/services/${service.slug}`;
+
                   return (
                     <Link
-                      key={service.id}
-                      href={`/services/${service.slug}`}
+                      key={`${service.id}-${idx}`}
+                      href={targetUrl}
                       className="group flex flex-col bg-white  overflow-hidden border border-slate-100 shadow-sm hover:shadow-2xl hover:shadow-[#16A34A]/5 transition-all duration-500 h-full"
                     >
                       <div className="relative aspect-[16/10] overflow-hidden bg-slate-100">
@@ -359,9 +432,16 @@ export default function ServicesPage() {
                             </span>
                           </div>
                         )}
-                        <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-full text-xs font-bold text-slate-700 border border-white/20">
-                          {category?.name || 'General'}
-                        </div>
+                        {category?.name && (
+                          <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-full text-xs font-bold text-slate-700 border border-white/20">
+                            {category.name}
+                          </div>
+                        )}
+                        {selectedLocation !== 'all' && (
+                          <div className="absolute top-4 left-4 bg-[#16A34A] text-white backdrop-blur-md px-3 py-1.5 rounded-full text-xs font-bold shadow-md">
+                            📍 {METRO_VANCOUVER_LOCATIONS.find(l => l.slug === selectedLocation)?.name}
+                          </div>
+                        )}
                       </div>
 
                       <div className="p-8 flex-1 flex flex-col">

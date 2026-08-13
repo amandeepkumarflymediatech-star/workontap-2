@@ -128,6 +128,30 @@ export async function POST(request) {
     const timeSlotString = (Array.isArray(job_time_slot) ? job_time_slot : [job_time_slot]).join(',')
     const bookingNumber = 'BK' + Date.now() + Math.floor(Math.random() * 1000)
 
+    // Extract single valid primary date (YYYY-MM-DD) for MySQL DATE column
+    let primaryJobDate = job_date;
+    let allDatesString = '';
+
+    if (Array.isArray(job_date)) {
+      primaryJobDate = job_date[0];
+      allDatesString = job_date.join(', ');
+    } else if (typeof job_date === 'string' && job_date.includes(',')) {
+      const parts = job_date.split(',').map(d => d.trim()).filter(Boolean);
+      primaryJobDate = parts[0];
+      allDatesString = parts.join(', ');
+    }
+
+    if (primaryJobDate && typeof primaryJobDate === 'string' && primaryJobDate.includes('T')) {
+      primaryJobDate = primaryJobDate.split('T')[0];
+    }
+
+    let finalTimingConstraints = timing_constraints || '';
+    if (allDatesString && !finalTimingConstraints.includes(allDatesString)) {
+      finalTimingConstraints = finalTimingConstraints 
+        ? `${finalTimingConstraints} (Selected Dates: ${allDatesString})` 
+        : `Selected Dates: ${allDatesString}`;
+    }
+
     const [serviceInfo] = await execute('SELECT duration_minutes FROM services WHERE id = ?', [service_id])
     const standardDuration = serviceInfo?.duration_minutes || 60
 
@@ -179,7 +203,7 @@ export async function POST(request) {
           bookingNumber, authenticatedUserId || null, service_id || null, service_name || null,
           service_price || 0, additional_price || 0,
           first_name || '', last_name || '', email || '', phone || '',
-          job_date || null, timeSlotString || null, timing_constraints || null,
+          primaryJobDate || null, timeSlotString || null, finalTimingConstraints || null,
           job_description || '', instructions || null,
           parking_access ? 1 : 0, elevator_access ? 1 : 0, has_pets ? 1 : 0,
           address_line1 || '', address_line2 || null, city || '', postal_code || null,
