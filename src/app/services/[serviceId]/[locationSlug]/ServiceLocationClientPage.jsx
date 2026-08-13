@@ -166,9 +166,10 @@ export default function ServiceLocationClientPage({
             {service.description && (
               <div className="mb-8">
                 <h2 className="text-2xl font-bold text-gray-900 mb-3">About this Service in {locationName}</h2>
-                <div className="prose max-w-none text-gray-700 leading-relaxed">
-                  {service.description}
-                </div>
+                <div 
+                  className="prose max-w-none text-gray-700 leading-relaxed"
+                  dangerouslySetInnerHTML={{ __html: service.description }}
+                />
               </div>
             )}
 
