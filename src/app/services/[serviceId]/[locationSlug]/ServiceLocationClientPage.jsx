@@ -163,7 +163,7 @@ export default function ServiceLocationClientPage({
             </div>
 
             {/* Description & Use Cases */}
-            {service.description && (
+            {/* {service.description && (
               <div className="mb-8">
                 <h2 className="text-2xl font-bold text-gray-900 mb-3">About this Service in {locationName}</h2>
                 <div 
@@ -171,8 +171,22 @@ export default function ServiceLocationClientPage({
                   dangerouslySetInnerHTML={{ __html: service.description }}
                 />
               </div>
-            )}
+            )} */}
 
+
+ {service.description && (
+              <div className="bg-white rounded-2xl p-6 md:p-8 mb-8 border border-gray-200/80 shadow-sm hover:shadow-md transition-shadow">
+                <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center border-b border-gray-100 pb-3">
+                  <span className="bg-[#16A34A] text-white w-7 h-7 rounded-full flex items-center justify-center text-sm mr-2.5 shadow-sm">📋</span>
+                  Service Details & Overview
+                </h3>
+                <div 
+                  className="rich-text-content text-gray-800 text-base leading-relaxed break-words"
+                  dangerouslySetInnerHTML={{ __html: service.description }}
+                />
+              </div>
+            )}
+            
             {useCases.length > 0 && (
               <div className="mb-10">
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">What We Help With in {locationName}</h2>
