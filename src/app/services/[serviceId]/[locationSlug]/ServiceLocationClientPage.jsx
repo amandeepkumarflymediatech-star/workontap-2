@@ -60,7 +60,7 @@ export default function ServiceLocationClientPage({
         <Header />
         <div className="container mx-auto px-6 py-20 text-center max-w-xl">
           <h2 className="text-3xl font-extrabold text-gray-900 mb-4">Service Not Found</h2>
-          <p className="text-gray-600 mb-8">We couldn't find the service you're looking for in {locationName}.</p>
+          <p className="text-gray-600 mb-8">We couldn&apos;t find the service you&apos;re looking for in {locationName}.</p>
           <Link href="/services" className="inline-flex items-center px-6 py-3 bg-[#16A34A] text-white font-semibold rounded-xl hover:bg-[#15803D] transition">
             Browse All Services
           </Link>

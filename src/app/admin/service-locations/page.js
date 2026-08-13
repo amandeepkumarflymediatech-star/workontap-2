@@ -190,7 +190,7 @@ export default function AdminServiceLocationsPage() {
         {loading ? (
           <div className="p-12 text-center text-slate-500">Loading service locations...</div>
         ) : filteredLocations.length === 0 ? (
-          <div className="p-12 text-center text-slate-500">No service locations found. Click "+ Add Service Location" to create one.</div>
+          <div className="p-12 text-center text-slate-500">No service locations found. Click &quot;+ Add Service Location&quot; to create one.</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
