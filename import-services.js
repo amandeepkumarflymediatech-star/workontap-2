@@ -1,5 +1,9 @@
 import fs from 'fs';
-import db from './src/lib/db.js';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+const { default: db } = await import('./src/lib/db.js');
 
 async function importServices() {
   console.log('Reading generated_services.json...');
