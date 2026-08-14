@@ -136,7 +136,7 @@ export default async function sitemap() {
     for (const item of activeLocs) {
       if (!item.service_slug || !item.location_slug) continue
 
-      const locPath = `/services/${item.service_slug}/${item.location_slug}`
+      const locPath = `/services/${item.service_slug}-${item.location_slug}`
       const fullUrl = `${baseUrl}${locPath}`
       
       const exists = sitemapEntries.some(

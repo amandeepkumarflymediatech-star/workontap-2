@@ -403,7 +403,7 @@ export default function ServicesPage() {
                 {pagedServices.map((service, idx) => {
                   const category = categories.find(c => c.id === service.category_id);
                   const targetUrl = selectedLocation !== 'all'
-                    ? `/services/${service.slug}/${selectedLocation}`
+                    ? `/services/${service.slug}-${selectedLocation}`
                     : `/services/${service.slug}`;
 
                   return (

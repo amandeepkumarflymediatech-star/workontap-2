@@ -62,21 +62,37 @@ export async function getSeoForPath(rawPathname) {
 
   let serviceLocationSeo = null
 
-  // 4. Check for nested Service Location path (/services/:serviceId/:locationSlug)
+  // 4. Check for nested Service Location path (/services/:serviceSlug-:locationSlug)
   const serviceLocParts = pathname.split('/').filter(Boolean)
-  if (serviceLocParts.length === 3 && serviceLocParts[0] === 'services') {
-    const serviceSlug = serviceLocParts[1]
-    const locationSlug = serviceLocParts[2]
+  if (serviceLocParts.length === 2 && serviceLocParts[0] === 'services') {
+    const slug = serviceLocParts[1]
+    
     try {
-      const rows = await db.query(
-        `SELECT sl.*, s.name as service_name
-         FROM service_locations sl
-         JOIN services s ON sl.service_id = s.id
-         WHERE (s.slug = ? OR s.id = ?) AND (sl.location_slug = ? OR LOWER(sl.location_name) = ?) AND sl.is_active = 1 LIMIT 1`,
-        [serviceSlug, serviceSlug, locationSlug, locationSlug.replace(/-/g, ' ')]
-      )
-      if (rows && rows.length > 0) {
-        serviceLocationSeo = rows[0]
+      // First get all services to do prefix matching
+      const allServices = await db.query(`SELECT id, slug, name FROM services WHERE is_active = 1 ORDER BY LENGTH(slug) DESC`);
+      
+      let matchedService = null;
+      let locationSlug = '';
+      
+      for (const s of allServices) {
+        if (slug.startsWith(s.slug + '-')) {
+          matchedService = s;
+          locationSlug = slug.substring(s.slug.length + 1);
+          break;
+        }
+      }
+
+      if (matchedService && locationSlug) {
+        const rows = await db.query(
+          `SELECT sl.*, s.name as service_name
+           FROM service_locations sl
+           JOIN services s ON sl.service_id = s.id
+           WHERE s.id = ? AND (sl.location_slug = ? OR LOWER(sl.location_name) = ?) AND sl.is_active = 1 LIMIT 1`,
+          [matchedService.id, locationSlug, locationSlug.replace(/-/g, ' ')]
+        )
+        if (rows && rows.length > 0) {
+          serviceLocationSeo = rows[0]
+        }
       }
     } catch (e) {
       console.error('Error fetching service location SEO:', e)

@@ -12,7 +12,7 @@ export default function HomePage() {
   const [testimonialIndex, setTestimonialIndex] = useState(0);
   const [homepageServices, setHomepageServices] = useState([]);
   const [loading, setLoading] = useState(true);
-  
+
   const services = [
     'fridge not cooling', 'leaky faucet', 'electrical outlet not working',
     'washer repair', 'dryer vent cleaning', 'ceiling fan installation',
@@ -63,7 +63,7 @@ export default function HomePage() {
       </div>
     );
   }
-  
+
   return (
     <div className="min-h-screen bg-slate-50 font-sans antialiased text-slate-900 overflow-x-hidden">
       <Header />
@@ -231,7 +231,7 @@ export default function HomePage() {
 
           {homepageServices.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              
+
               {homepageServices.slice(0, 3).map((service) => (
                 <Link
                   key={service.id}

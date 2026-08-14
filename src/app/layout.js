@@ -55,12 +55,12 @@ export default async function RootLayout({ children }) {
 
         <link rel="icon" href="/favicon.png" />
 
-        {seo.headerScripts && (
-          <div dangerouslySetInnerHTML={{ __html: seo.headerScripts }} className="hidden" />
-        )}
       </head>
 
       <body className="flex-grow flex flex-col min-h-screen" suppressHydrationWarning>
+        {seo.headerScripts && (
+          <div dangerouslySetInnerHTML={{ __html: seo.headerScripts }} className="hidden" />
+        )}
         <AuthProvider>
           <DynamicSeoManager />
           {children}

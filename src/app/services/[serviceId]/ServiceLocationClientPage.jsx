@@ -91,10 +91,10 @@ export default function ServiceLocationClientPage({
 
       <div className="container mx-auto px-6 max-w-7xl py-8 md:py-12">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
-          
+
           {/* Main Left Content Column */}
           <div className="lg:col-span-2">
-            
+
             {/* Image Banner */}
             <div className="mb-6 md:mb-8 rounded-2xl overflow-hidden shadow-sm border border-slate-100 relative bg-slate-50">
               {service.image_url ? (
@@ -174,19 +174,19 @@ export default function ServiceLocationClientPage({
             )} */}
 
 
- {service.description && (
+            {service.description && (
               <div className="bg-white rounded-2xl p-6 md:p-8 mb-8 border border-gray-200/80 shadow-sm hover:shadow-md transition-shadow">
                 <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center border-b border-gray-100 pb-3">
                   <span className="bg-[#16A34A] text-white w-7 h-7 rounded-full flex items-center justify-center text-sm mr-2.5 shadow-sm">📋</span>
                   Service Details & Overview
                 </h3>
-                <div 
+                <div
                   className="rich-text-content text-gray-800 text-base leading-relaxed break-words"
                   dangerouslySetInnerHTML={{ __html: service.description }}
                 />
               </div>
             )}
-            
+
             {useCases.length > 0 && (
               <div className="mb-10">
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">What We Help With in {locationName}</h2>
@@ -212,7 +212,7 @@ export default function ServiceLocationClientPage({
                     return (
                       <Link
                         key={idx}
-                        href={`/services/${service.slug}/${loc.location_slug}`}
+                        href={`/services/${service.slug}-${loc.location_slug}`}
                         className="px-3.5 py-1.5 bg-gray-100 hover:bg-[#16A34A] hover:text-white text-gray-700 rounded-lg text-xs font-medium transition"
                       >
                         {service.name} in {loc.location_name}

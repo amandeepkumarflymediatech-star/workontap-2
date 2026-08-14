@@ -580,6 +580,18 @@ const tables = [
     \`value\` TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  )`,
+
+  // Table 29: testimonials
+  `CREATE TABLE IF NOT EXISTS testimonials (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    stars INT DEFAULT 5,
+    text TEXT NOT NULL,
+    is_active TINYINT(1) DEFAULT 1,
+    display_order INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
   )`
 ];
 
@@ -876,7 +888,7 @@ async function runMigration() {
       'provider_payouts', 'disputes', 'mobile_auth_users', 
       'notifications', 'deletion_requests', 'service_areas',
       'states', 'districts', 'cities', 'skills',
-      'service_locations', 'seo_settings', 'blogs', 'system_settings'
+      'service_locations', 'seo_settings', 'blogs', 'system_settings', 'testimonials'
     ];
 
     let totalColumns = 0;
@@ -912,7 +924,7 @@ async function runMigration() {
     console.log('✅ Migration completed successfully!');
     console.log('='.repeat(60));
     console.log(`   Database: ${DB_NAME}`);
-    console.log(`   Tables:   ${tableQueries.length}/28`);
+    console.log(`   Tables:   ${tableQueries.length}/29`);
     console.log(`   Total Columns: ${totalColumns}`);
     console.log('   ✓ UNIQUE constraint added to users.phone column');
     console.log('='.repeat(60) + '\n');

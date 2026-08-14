@@ -89,16 +89,7 @@ export default function ContactPage() {
               </div>
             </div>
 
-            {/* Chat Link */}
-            <div className="mt-8 pt-6 border-t border-gray-200">
-              <Link
-                href="/chat"
-                className="inline-flex items-center gap-2 text-green-600 hover:text-green-700"
-              >
-                <span className="text-xl">💬</span>
-                Chat with us now
-              </Link>
-            </div>
+            
           </div>
 
           {/* Contact Form */}
