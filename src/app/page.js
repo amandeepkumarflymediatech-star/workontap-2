@@ -249,13 +249,13 @@ export default function HomePage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { icon: '🏠', title: 'For Homeowners', desc: 'Get help with cleaning, repairs, installations, furniture assembly, moving and everyday home maintenance.' },
-              { icon: '🎓', title: 'For Renters & Students', desc: 'Find support for apartment moves, student moving, cleaning, furniture assembly and smaller household jobs.' },
-              { icon: '🔑', title: 'For Landlords & Property Managers', desc: 'Arrange move-in or move-out cleaning, rental property maintenance, minor repairs and other services required between tenants.' },
-              { icon: '🏢', title: 'For Businesses', desc: 'Access commercial cleaning, warehouse cleaning, commercial moving and handyman services for offices and other business properties.' }
+              { icon: <svg className="w-10 h-10 text-[#16A34A]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>, title: 'For Homeowners', desc: 'Get help with cleaning, repairs, installations, furniture assembly, moving and everyday home maintenance.' },
+              { icon: <svg className="w-10 h-10 text-[#16A34A]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 14l9-5-9-5-9 5 9 5z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 14v7"/></svg>, title: 'For Renters & Students', desc: 'Find support for apartment moves, student moving, cleaning, furniture assembly and smaller household jobs.' },
+              { icon: <svg className="w-10 h-10 text-[#16A34A]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>, title: 'For Landlords & Property Managers', desc: 'Arrange move-in or move-out cleaning, rental property maintenance, minor repairs and other services required between tenants.' },
+              { icon: <svg className="w-10 h-10 text-[#16A34A]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>, title: 'For Businesses', desc: 'Access commercial cleaning, warehouse cleaning, commercial moving and handyman services for offices and other business properties.' }
             ].map((card, i) => (
               <div key={i} className="bg-slate-800 p-8 rounded-3xl border border-slate-700 hover:border-[#16A34A]/50 transition-colors">
-                <div className="text-4xl mb-4">{card.icon}</div>
+                <div className="mb-4">{card.icon}</div>
                 <h3 className="text-xl font-bold mb-3">{card.title}</h3>
                 <p className="text-slate-400 text-sm leading-relaxed">{card.desc}</p>
               </div>

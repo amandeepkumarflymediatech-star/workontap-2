@@ -6,8 +6,8 @@ dotenv.config();
 const { default: db } = await import('./src/lib/db.js');
 
 async function importServices() {
-  console.log('Reading generated_services.json...');
-  const data = JSON.parse(fs.readFileSync('generated_services.json', 'utf8'));
+  console.log('Reading generated_services2.json...');
+  const data = JSON.parse(fs.readFileSync('generated_services2.json', 'utf8'));
   console.log(`Found ${data.length} services to import.`);
 
   // Build category map
