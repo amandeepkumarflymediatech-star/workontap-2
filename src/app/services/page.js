@@ -289,6 +289,8 @@ export default function ServicesPage() {
     );
   }
 
+  const getImageUrl = (url) => url && !url.startsWith('http') && !url.startsWith('/') ? '/uploads/' + url : url;
+
   return (
     <div className="min-h-screen bg-slate-50 font-sans antialiased text-slate-900">
       <Header />
@@ -458,7 +460,6 @@ export default function ServicesPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
                 {pagedServices.map((service, idx) => {
                   const category = categories.find(c => c.id === service.category_id);
-                  const getImageUrl = (url) => url && !url.startsWith('http') && !url.startsWith('/') ? '/uploads/' + url : url;
                   const targetUrl = (selectedLocation !== 'all' && !service.slug.includes(selectedLocation))
                     ? `/services/${service.slug}-${selectedLocation}`
                     : `/services/${service.slug}`;
