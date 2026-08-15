@@ -607,6 +607,8 @@ const alterations = [
     sql: 'ALTER TABLE users ADD UNIQUE INDEX phone_unique (phone)',
     type: 'unique'
   },
+  // service_categories table additions
+  { table: 'service_categories', column: 'image_url', sql: 'ALTER TABLE service_categories ADD COLUMN image_url VARCHAR(255) AFTER icon' },
   
   // service_providers table additions
   { table: 'service_providers', column: 'email_verified', sql: 'ALTER TABLE service_providers ADD COLUMN email_verified TINYINT(1) DEFAULT 0 AFTER last_login' },
