@@ -145,7 +145,7 @@ export default function ServicesPage() {
 
   useEffect(() => {
     setPage(1);
-  }, [activeCategory, searchTerm]);
+  }, [activeCategory, searchTerm, selectedLocation]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -211,7 +211,57 @@ export default function ServicesPage() {
       (service.short_description || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       (service.description || '').toLowerCase().includes(searchTerm.toLowerCase());
 
-    return matchesCategory && matchesSearch;
+    let matchesLocation = true;
+    if (selectedLocation !== 'all') {
+      const cityKeywords = [
+        'vancouver', 'surrey', 'burnaby', 'richmond', 'coquitlam',
+        'langley', 'delta', 'maple ridge', 'new westminster',
+        'port coquitlam', 'west vancouver', 'port moody', 
+        'pitt meadows', 'white rock', 'north vancouver', 'metro vancouver'
+      ];
+
+      const getBaseCity = (slug) => {
+        if (slug.includes('langley')) return 'langley';
+        if (slug.includes('north-vancouver')) return 'north vancouver';
+        if (slug === 'west-vancouver') return 'west vancouver';
+        if (slug === 'port-coquitlam') return 'port coquitlam';
+        if (slug === 'port-moody') return 'port moody';
+        if (slug === 'pitt-meadows') return 'pitt meadows';
+        if (slug === 'maple-ridge') return 'maple ridge';
+        if (slug === 'new-westminster') return 'new westminster';
+        if (slug === 'white-rock') return 'white rock';
+        if (slug === 'metro-vancouver') return 'metro vancouver';
+        return slug;
+      };
+      
+      const baseCity = getBaseCity(selectedLocation);
+
+      const hasOtherLocation = cityKeywords.some(city => {
+        if (city === baseCity) return false;
+        
+        const serviceNameLower = service.name.toLowerCase();
+        
+        if (serviceNameLower.includes(city)) {
+          if (city === 'vancouver' && 
+             (serviceNameLower.includes('north vancouver') || 
+              serviceNameLower.includes('west vancouver') || 
+              serviceNameLower.includes('metro vancouver'))) {
+            return false;
+          }
+          if (city === 'coquitlam' && serviceNameLower.includes('port coquitlam')) {
+            return false;
+          }
+          return true;
+        }
+        return false;
+      });
+
+      if (hasOtherLocation) {
+        matchesLocation = false;
+      }
+    }
+
+    return matchesCategory && matchesSearch && matchesLocation;
   });
 
   const startIndex = (page - 1) * PAGE_SIZE;
@@ -403,7 +453,7 @@ export default function ServicesPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
                 {pagedServices.map((service, idx) => {
                   const category = categories.find(c => c.id === service.category_id);
-                  const targetUrl = selectedLocation !== 'all'
+                  const targetUrl = (selectedLocation !== 'all' && !service.slug.includes(selectedLocation))
                     ? `/services/${service.slug}-${selectedLocation}`
                     : `/services/${service.slug}`;
 

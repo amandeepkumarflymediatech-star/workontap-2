@@ -116,17 +116,17 @@ export default function ServiceLocationClientPage({
             </div>
 
             {/* Title & Intro */}
-            <div className="mb-8">
+            {/* <div className="mb-8">
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 mb-4 leading-tight">
                 {headingText}
               </h1>
               <p className="text-lg text-gray-700 leading-relaxed">
                 {introText}
               </p>
-            </div>
+            </div> */}
 
             {/* Why Choose Us Grid */}
-            <div className="mb-10 bg-slate-50 rounded-2xl p-6 border border-slate-200">
+            {/* <div className="mb-10 bg-slate-50 rounded-2xl p-6 border border-slate-200">
               <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                 <span>🛡️</span> Why Hire {service.name} Experts in {locationName} via WorkOnTap?
               </h2>
@@ -160,7 +160,7 @@ export default function ServiceLocationClientPage({
                   </div>
                 </div>
               </div>
-            </div>
+            </div> */}
 
             {/* Description & Use Cases */}
             {/* {service.description && (
@@ -212,7 +212,7 @@ export default function ServiceLocationClientPage({
                     return (
                       <Link
                         key={idx}
-                        href={`/services/${service.slug}-${loc.location_slug}`}
+                        href={service.slug.includes(loc.location_slug) ? `/services/${service.slug}` : `/services/${service.slug}-${loc.location_slug}`}
                         className="px-3.5 py-1.5 bg-gray-100 hover:bg-[#16A34A] hover:text-white text-gray-700 rounded-lg text-xs font-medium transition"
                       >
                         {service.name} in {loc.location_name}
