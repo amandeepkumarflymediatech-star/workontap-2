@@ -269,11 +269,12 @@ export default function ServicesPage() {
   const pagedServices = filteredServices.slice(startIndex, endIndex);
 
   const filterCategories = [
-    { id: 'all', name: 'All Services', icon: '✨' },
+    { id: 'all', name: 'All Services', icon: '✨', image_url: null },
     ...categories.map(cat => ({
       id: cat.id.toString(),
       name: cat.name,
-      icon: cat.icon || '🛠️'
+      icon: cat.icon || '🛠️',
+      image_url: cat.image_url
     }))
   ];
 
@@ -398,7 +399,7 @@ export default function ServicesPage() {
       </section>
 
       {/* Category Navigation - Horizontal Scroll on small screens */}
-      <section id="services-listing" className=" top-[80px] z-30  backdrop-blur-xl border-b border-slate-100 py-6">
+      <section id="services-listing" className="sticky top-[80px] z-30 backdrop-blur-xl bg-white/80 border-b border-slate-100 py-6">
         <div className="container mx-auto px-6 max-w-7xl">
           <div className="flex flex-wrap gap-2 md:gap-3 justify-center items-center gap-3 overflow-x-auto no-scrollbar pb-1 md:justify-center">
             {filterCategories.map((category) => (
@@ -412,13 +413,17 @@ export default function ServicesPage() {
                   }
                 `}
               >
-                <span>
-                  {category.icon && category.icon.includes('-') ? (
-                    <ion-icon name={category.icon}></ion-icon>
-                  ) : (
-                    category.icon
-                  )}
-                </span>
+                {category.image_url ? (
+                  <img src={getImageUrl(category.image_url)} alt={category.name} className="w-6 h-6 rounded-full object-cover" />
+                ) : (
+                  <span>
+                    {category.icon && category.icon.length > 2 ? (
+                      <ion-icon name={category.icon}></ion-icon>
+                    ) : (
+                      category.icon
+                    )}
+                  </span>
+                )}
                 <span>{category.name}</span>
               </button>
             ))}
@@ -479,7 +484,7 @@ export default function ServicesPage() {
                                   <ion-icon name={category.icon}></ion-icon>
                                 </div>
                               ) : (
-                                category?.icon || '🛠️'
+                                category?.icon || '🔧'
                               )}
                             </span>
                           </div>
