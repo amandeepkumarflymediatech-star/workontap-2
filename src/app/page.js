@@ -3,116 +3,90 @@
 import Footer from '@/components/Footer';
 import Header from '@/components/Header';
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
-import Icon from '@/components/Icon';
-import TypingHero from '@/components/TypingHero';
+import { useState } from 'react';
 import AnimatedSearchBar from '@/components/AnimatedSearchBar';
 
 export default function HomePage() {
-  const [testimonialIndex, setTestimonialIndex] = useState(0);
-  const [homepageServices, setHomepageServices] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [openFaq, setOpenFaq] = useState(null);
 
   const services = [
-    'fridge not cooling', 'leaky faucet', 'electrical outlet not working',
-    'washer repair', 'dryer vent cleaning', 'ceiling fan installation',
-    'garbage disposal jammed', 'furnace making weird noises',
-    'door not closing properly', 'sink clogged'
+    'house cleaning', 'apartment moving', 'furniture assembly',
+    'deep cleaning', 'move out cleaning', 'handyman repairs',
+    'tv mounting', 'carpet cleaning'
   ];
 
-  const heroPhrases = [
-    'Perfectly Maintained.',
-    'Beautifully Upgraded.',
-    'Expertly Repaired.',
-    'Spotlessly Cleaned.',
-    'Professionally Managed',
-  ];
-
-  const testimonials = [
-    [
-      { name: 'Vikram A.', stars: 5, text: 'Appreciated the carpenter\'s quality of work during his renovation project, saying the platform made the entire process smooth and hassle-free.' },
-      { name: 'Priya M', stars: 5, text: 'Stated that the painter completely transformed her living room with beautiful finishing and attention to detail, making Work On Top her go-to choice.' },
-      { name: 'Rohan.', stars: 5, text: 'Shared that the electrician arrived on time, completed all repairs quickly, and provided excellent service. He was impressed with both the response time and the professionalism.' },
-    ],
-    [
-      { name: 'Anita S.', stars: 5, text: 'Was very happy with the plumbing service. The pro arrived quickly and fixed the issue efficiently with great professionalism.' },
-      { name: 'James K.', stars: 5, text: 'Found the booking process incredibly easy. The handyman was skilled, polite, and left the place spotless after the job.' },
-      { name: 'Sara L.', stars: 5, text: 'Loved how fast the response was. The cleaning team did an outstanding job and exceeded all her expectations.' },
-    ],
-  ];
-
-  useEffect(() => { fetchHomepageData(); }, []);
-
-  const fetchHomepageData = async () => {
-    setLoading(true);
-    try {
-      const servicesRes = await fetch('/api/services?is_homepage=1');
-      const servicesData = await servicesRes.json();
-      if (servicesData.success) setHomepageServices(servicesData.data || []);
-    } catch (error) {
-      console.error('Error loading homepage data:', error);
-    } finally {
-      setLoading(false);
+  const faqs = [
+    {
+      q: "What services does Work On Tap provide?",
+      a: "Work On Tap focuses on three main service categories: cleaning, moving and handyman services. Available services include house cleaning, commercial cleaning, carpet cleaning, moving services, furniture assembly, general home repairs and many other property-related services."
+    },
+    {
+      q: "Do you provide cleaning services in Vancouver?",
+      a: "Yes. Work On Tap offers access to residential and commercial cleaning services in Vancouver and surrounding areas, depending on service availability. Services include regular house cleaning, deep cleaning, move-in and move-out cleaning, carpet cleaning, window cleaning and commercial cleaning."
+    },
+    {
+      q: "What handyman services are available?",
+      a: "Handyman services include general home repairs, furniture assembly, wall mounting, shelving installation, drywall repair, painting touch-ups, minor carpentry, flooring repairs, minor plumbing, minor electrical work and other general property maintenance jobs."
+    },
+    {
+      q: "Can I find movers for a house or apartment?",
+      a: "Yes. Moving services include house moving, apartment moving, commercial moving, student moving and long-distance moving."
+    },
+    {
+      q: "Do you provide services for commercial properties?",
+      a: "Yes. Work On Tap includes commercial cleaning, warehouse cleaning, commercial moving and office or commercial handyman services."
+    },
+    {
+      q: "How do I choose the right service?",
+      a: "Start with the main category that matches your job: Cleaning, Moving or Handyman. Then select the specific service that best matches your requirements and provide as much information about the job as possible."
     }
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-16 w-16  border-green-500 border-t-transparent"></div>
-      </div>
-    );
-  }
+  ];
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans antialiased text-slate-900 overflow-x-hidden">
       <Header />
 
-      {/* Unique Hero Section */}
+      {/* Hero Section */}
       <section className="relative min-h-[calc(100vh-64px)] flex items-center overflow-hidden bg-white">
-
         <div className="container mx-auto px-6 max-w-7xl relative z-10 py-20">
           <div className="flex flex-col lg:flex-row items-center gap-16">
-            {/* Left Content */}
             <div className="flex-1 text-center lg:text-left relative z-10">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand/10 border border-brand/30 text-[#15803D] text-sm font-medium mb-6 backdrop-blur-sm animate-fadeIn">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-[#15803D] text-sm font-medium mb-6 backdrop-blur-sm animate-fadeIn">
                 <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brandLight opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-brand"></span>
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                 </span>
-                5,000+ Verified Pros Ready
+                Serving Vancouver & Metro Vancouver
               </div>
 
-              <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold font-[family-name:var(--font-outfit)] leading-[1.1] mb-8 tracking-tight min-h-[100px] md:min-h-[140px] lg:min-h-[160px]">
-                Your Home, <br />
-                <TypingHero phrases={heroPhrases} />
-                <span className="text-emerald-400 animate-pulse">|</span>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold font-[family-name:var(--font-outfit)] leading-[1.1] mb-8 tracking-tight">
+                Cleaning, Moving & Handyman Services in Vancouver <br className="hidden lg:block" />
+                <span className="text-[#16A34A]">— All in One Place</span>
               </h1>
 
-              <p className="text-lg md:text-xl mb-10 max-w-xl lg:mx-0 mx-auto leading-relaxed">
-                Connect with the city&apos;s finest tradespeople in minutes.
-                Transparent pricing, instant booking, and guaranteed quality.
+              <p className="text-lg md:text-xl mb-10 max-w-xl lg:mx-0 mx-auto leading-relaxed text-slate-600">
+                Your home and property to-do list should not take over your day. Whether you need a cleaner, help with your next move, or someone to handle everyday repairs, Work On Tap brings essential services together in one convenient place.
               </p>
 
               <AnimatedSearchBar services={services} />
 
               <div className="mt-8 flex flex-wrap items-center gap-6 justify-center lg:justify-start text-sm">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 text-slate-600">
                   <svg className="w-5 h-5 text-emerald-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
-                  No hidden fees
+                  Homes & Apartments
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 text-slate-600">
                   <svg className="w-5 h-5 text-emerald-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
-                  Certified Experts
+                  Offices & Commercial
+                </div>
+                <div className="flex items-center gap-2 text-slate-600">
+                  <svg className="w-5 h-5 text-emerald-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+                  Rental Properties
                 </div>
               </div>
             </div>
 
-            {/* Right Side - Responsive Background/Visual */}
-            <div className="absolute inset-0 z-0 lg:relative lg:flex-1 lg:z-10 mt-12 lg:mt-0 overflow-hidden lg:overflow-visible opacity-25 lg:opacity-100 flex items-center lg:justify-end justify-center">
-              {/* White Gradient Background behind image */}
-              <div className="absolute inset-x-0 lg:inset-0 transform scale-150 lg:scale-110"></div>
-
+            <div className="absolute inset-0 z-0 lg:relative lg:flex-1 lg:z-10 mt-12 lg:mt-0 overflow-hidden lg:overflow-visible opacity-25 lg:opacity-100 flex items-center justify-center">
               <div className="relative z-10 w-full transition-all duration-500 group flex items-center justify-center">
                 <img
                   src="/hero-sphere.png"
@@ -120,247 +94,289 @@ export default function HomePage() {
                   className="object-contain lg:object-cover lg:scale-105 group-hover:scale-100 transition-transform duration-700"
                 />
               </div>
-
-              {/* Floating Decorative Elements (Desktop only) */}
-              {/* <div className="absolute top-1/2 -right-12 w-32 h-32 bg-white/10 rounded-full blur-3xl -z-10 animate-pulse hidden lg:block"></div>
-              <div className="absolute -bottom-8 -left-8 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl -z-10 hidden lg:block"></div> */}
-            </div>
-          </div>
-        </div>
-
-        {/* Bottom Curve */}
-        <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-none z-10 translate-y-[1px]">
-          <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-auto">
-            <path d="M0 120L60 105C120 90 240 60 360 45C480 30 600 30 720 37.5C840 45 960 60 1080 67.5C1200 75 1320 75 1380 75L1440 75V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z" fill="#f8fafc" />
-          </svg>
-        </div>
-      </section>
-
-      {/* Sleek Ticker/Stats Section */}
-      <section className="py-24 bg-slate-50">
-        <div className="container mx-auto px-6 max-w-7xl">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
-            <div className="group">
-              <div className="text-4xl md:text-6xl font-light text-slate-900 mb-2 font-[family-name:var(--font-outfit)] group-hover:text-[#15803D] transition-colors duration-500">500k<span className="text-[#15803D] font-bold">+</span></div>
-              <div className="text-slate-500 uppercase tracking-[0.2em] text-sm font-semibold">Jobs Completed Locally</div>
-              <div className="w-12 h-0.5 bg-slate-200 mx-auto mt-6 group-hover:w-24 group-hover:bg-[#15803D] transition-all duration-500"></div>
-            </div>
-            <div className="group">
-              <div className="text-4xl md:text-6xl font-light text-slate-900 mb-2 font-[family-name:var(--font-outfit)] group-hover:text-[#15803D] transition-colors duration-500">96<span className="text-[#15803D] font-bold">%</span></div>
-              <div className="text-slate-500 uppercase tracking-[0.2em] text-sm font-semibold">Client Satisfaction</div>
-              <div className="w-12 h-0.5 bg-slate-200 mx-auto mt-6 group-hover:w-24 group-hover:bg-[#15803D] transition-all duration-500"></div>
-            </div>
-            <div className="group">
-              <div className="text-4xl md:text-6xl font-light text-slate-900 mb-2 font-[family-name:var(--font-outfit)] group-hover:text-[#15803D] transition-colors duration-500">4.8<span className="text-[#15803D] font-bold">★</span></div>
-              <div className="text-slate-500 uppercase tracking-[0.2em] text-sm font-semibold">Average Pro Rating</div>
-              <div className="w-12 h-0.5 bg-slate-200 mx-auto mt-6 group-hover:w-24 group-hover:bg-[#15803D] transition-all duration-500"></div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Video "How it Works" Section */}
-      <section className="py-12 bg-white relative">
+      {/* Main Categories Intro */}
+      <section className="py-24 bg-slate-50 border-t border-slate-100">
         <div className="container mx-auto px-6 max-w-7xl">
-          <div className="max-w-5xl mx-auto">
-            <div className="relative rounded-[3rem] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.1)] border-[12px] border-white group">
-              <div className="absolute inset-0 bg-emerald-500/5 group-hover:bg-transparent transition-colors duration-500 z-10 pointer-events-none"></div>
-              <video
-                src="/video/how-it-works.mp4"
-                className="w-full h-auto object-cover"
-                autoPlay
-                muted
-                loop
-                playsInline
-                controls
-              />
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <h2 className="text-3xl md:text-5xl font-bold text-slate-900 mb-6 font-[family-name:var(--font-outfit)]">One Place for the Services You Need Most</h2>
+            <p className="text-lg text-slate-600 leading-relaxed">
+              Finding reliable help for different jobs can take time. Work On Tap keeps things simple by bringing three essential service categories together. Whether it is a one-time job or ongoing property maintenance, you can find a service that matches your needs without searching across multiple platforms.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <Link href="/services?category=cleaning" className="group bg-white rounded-3xl p-8 border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col h-full">
+              <div className="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center text-3xl mb-6 group-hover:bg-[#16A34A] group-hover:text-white transition-colors">🧹</div>
+              <h3 className="text-2xl font-bold text-slate-900 mb-3">Cleaning Services</h3>
+              <p className="text-slate-600 mb-6 flex-1">Routine house cleaning, deep cleaning, move-out cleaning, and commercial property cleaning.</p>
+              <div className="text-[#16A34A] font-medium flex items-center gap-2">Explore Cleaning <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg></div>
+            </Link>
+            <Link href="/services?category=movers" className="group bg-white rounded-3xl p-8 border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col h-full">
+              <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center text-3xl mb-6 group-hover:bg-blue-600 group-hover:text-white transition-colors">📦</div>
+              <h3 className="text-2xl font-bold text-slate-900 mb-3">Moving Services</h3>
+              <p className="text-slate-600 mb-6 flex-1">House movers, apartment moving, student moving, and long-distance relocations.</p>
+              <div className="text-blue-600 font-medium flex items-center gap-2">Explore Moving <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg></div>
+            </Link>
+            <Link href="/services?category=handyman" className="group bg-white rounded-3xl p-8 border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col h-full">
+              <div className="w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center text-3xl mb-6 group-hover:bg-amber-500 group-hover:text-white transition-colors">🛠️</div>
+              <h3 className="text-2xl font-bold text-slate-900 mb-3">Handyman Services</h3>
+              <p className="text-slate-600 mb-6 flex-1">General home repairs, furniture assembly, TV mounting, plumbing, electrical and more.</p>
+              <div className="text-amber-600 font-medium flex items-center gap-2">Explore Handyman <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg></div>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Deep Dive: Cleaning */}
+      <section className="py-24 bg-white overflow-hidden">
+        <div className="container mx-auto px-6 max-w-7xl">
+          <div className="flex flex-col lg:flex-row items-center gap-16">
+            <div className="flex-1">
+              <div className="inline-block px-4 py-1.5 rounded-full bg-emerald-50 text-[#16A34A] text-sm font-bold tracking-wider uppercase mb-4">Cleaning Services in Vancouver</div>
+              <h2 className="text-3xl md:text-5xl font-bold text-slate-900 mb-6 font-[family-name:var(--font-outfit)]">A Cleaner Space Starts With the Right Service</h2>
+              <p className="text-lg text-slate-600 mb-6 leading-relaxed">
+                Keeping your home or workplace clean takes time, consistency and attention to detail. Work On Tap offers access to a wide range of cleaning services in Vancouver for residential and commercial properties.
+              </p>
+              <p className="text-lg text-slate-600 mb-8 leading-relaxed">
+                Whether you need routine house cleaning, move-out cleaning or professional cleaning for a larger commercial property, you can choose the service that best fits your space.
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
+                {['Regular House Cleaning', 'Deep Cleaning', 'Move-In Cleaning', 'Move-Out Cleaning', 'Carpet Cleaning', 'Steam Cleaning', 'Window Cleaning', 'Pressure Cleaning', 'Commercial Cleaning', 'Warehouse Cleaning', 'Educational Institution Cleaning', 'Medical Facility & Hospital Cleaning'].map(item => (
+                  <div key={item} className="flex items-center gap-2 text-slate-700">
+                    <svg className="w-5 h-5 text-[#16A34A] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7"/></svg> {item}
+                  </div>
+                ))}
+              </div>
+              <p className="text-slate-600 mb-8 italic">From everyday cleaning to more detailed property care, Work On Tap helps you find the right cleaning service for your requirements.</p>
+              <Link href="/services?category=cleaning" className="inline-flex items-center gap-2 px-8 py-4 bg-[#16A34A] text-white rounded-xl font-bold hover:bg-[#15803D] transition shadow-lg shadow-green-500/20">
+                Explore Cleaning Services <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+              </Link>
+            </div>
+            <div className="flex-1 relative">
+              <div className="aspect-square md:aspect-[4/5] rounded-[3rem] overflow-hidden shadow-2xl relative z-10 bg-emerald-100 flex items-center justify-center">
+                 <img src="/cleaning_services.jpg" alt="Cleaning Services" className="w-full h-full object-cover" />
+              </div>
+              <div className="absolute -bottom-8 -left-8 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl -z-10"></div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Interactive "How it Works" */}
-      <section className="py-24 bg-white relative overflow-hidden">
+      {/* Deep Dive: Moving */}
+      <section className="py-24 bg-slate-50 overflow-hidden">
         <div className="container mx-auto px-6 max-w-7xl">
-          <div className="max-w-2xl mx-auto text-center mb-12 md:mb-20">
-            <span className="text-emerald-600 font-bold tracking-widest uppercase text-xs md:text-sm mb-3 md:mb-4 block">Process</span>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 font-[family-name:var(--font-outfit)] leading-tight">How WorkOnTap works</h2>
+          <div className="flex flex-col-reverse lg:flex-row items-center gap-16">
+            <div className="flex-1 relative">
+              <div className="aspect-square md:aspect-[4/5] rounded-[3rem] overflow-hidden shadow-2xl relative z-10 bg-blue-100 flex items-center justify-center">
+                 <img src="/moving_services.jpg" alt="Moving Services" className="w-full h-full object-cover" />
+              </div>
+              <div className="absolute -top-8 -right-8 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl -z-10"></div>
+            </div>
+            <div className="flex-1">
+              <div className="inline-block px-4 py-1.5 rounded-full bg-blue-50 text-blue-600 text-sm font-bold tracking-wider uppercase mb-4">Moving Services in Vancouver</div>
+              <h2 className="text-3xl md:text-5xl font-bold text-slate-900 mb-6 font-[family-name:var(--font-outfit)]">Moving Should Feel Organized, Not Overwhelming</h2>
+              <p className="text-lg text-slate-600 mb-6 leading-relaxed">
+                A successful move is about more than transporting boxes. Property access, furniture, stairs, elevators, moving distance and scheduling can all affect how your move needs to be planned.
+              </p>
+              <p className="text-lg text-slate-600 mb-8 leading-relaxed">
+                Work On Tap offers moving services in Vancouver for homes, apartments, businesses, students and long-distance relocations.
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
+                {['House Movers', 'Apartment Moving', 'Commercial Movers', 'Long Distance Movers', 'Student Moving'].map(item => (
+                  <div key={item} className="flex items-center gap-2 text-slate-700">
+                    <svg className="w-5 h-5 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7"/></svg> {item}
+                  </div>
+                ))}
+              </div>
+              <p className="text-slate-600 mb-8 italic">Whether you are moving across the city or preparing for a longer relocation, choose a moving service based on your property type and specific requirements. Providing details such as pickup location, destination, property type, larger furniture items and preferred moving date can help make the process smoother from the beginning.</p>
+              <Link href="/services?category=movers" className="inline-flex items-center gap-2 px-8 py-4 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-500/20">
+                Explore Moving Services <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Deep Dive: Handyman */}
+      <section className="py-24 bg-white overflow-hidden">
+        <div className="container mx-auto px-6 max-w-7xl">
+          <div className="flex flex-col lg:flex-row items-center gap-16">
+            <div className="flex-1">
+              <div className="inline-block px-4 py-1.5 rounded-full bg-amber-50 text-amber-600 text-sm font-bold tracking-wider uppercase mb-4">Handyman Services in Vancouver</div>
+              <h2 className="text-3xl md:text-5xl font-bold text-slate-900 mb-6 font-[family-name:var(--font-outfit)]">Get Those Small Jobs Off Your To-Do List</h2>
+              <p className="text-lg text-slate-600 mb-6 leading-relaxed">
+                A loose door, damaged drywall, furniture waiting to be assembled or an unfinished installation may seem small, but these tasks can quickly add up.
+              </p>
+              <p className="text-lg text-slate-600 mb-8 leading-relaxed">
+                Work On Tap provides access to practical handyman services in Vancouver for homeowners, renters, landlords, offices and commercial properties.
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8 text-sm">
+                {['General Home Repairs', 'Furniture Assembly', 'TV & Wall Mounting', 'Shelving & Storage Installation', 'Door & Window Repairs', 'Kitchen Repairs & Installation', 'Bathroom Repairs & Installation', 'Drywall & Wall Repair', 'Painting & Touch-Ups', 'Minor Carpentry', 'Flooring & Tile Repairs', 'Minor Plumbing', 'Minor Electrical', 'Smart Home Installation', 'Home Safety & Accessibility', 'Outdoor Repairs', 'Fence & Deck Repairs', 'Move-In & Move-Out Repairs', 'Rental Property Maintenance', 'Office & Commercial Handyman', 'General Odd Jobs'].map(item => (
+                  <div key={item} className="flex items-center gap-2 text-slate-700">
+                    <svg className="w-5 h-5 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7"/></svg> {item}
+                  </div>
+                ))}
+              </div>
+              <p className="text-slate-600 mb-8 italic">Not every job requires a large renovation. Sometimes you simply need practical help to complete repairs, installations and maintenance tasks efficiently.</p>
+              <Link href="/services?category=handyman" className="inline-flex items-center gap-2 px-8 py-4 bg-amber-500 text-white rounded-xl font-bold hover:bg-amber-600 transition shadow-lg shadow-amber-500/20">
+                Explore Handyman Services <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+              </Link>
+            </div>
+            <div className="flex-1 relative">
+              <div className="aspect-square md:aspect-[4/5] rounded-[3rem] overflow-hidden shadow-2xl relative z-10 bg-amber-100 flex items-center justify-center">
+                 <img src="/handyman_services.jpg" alt="Handyman Services" className="w-full h-full object-cover" />
+              </div>
+              <div className="absolute -bottom-8 -left-8 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl -z-10"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Target Audiences */}
+      <section className="py-24 bg-slate-900 text-white">
+        <div className="container mx-auto px-6 max-w-7xl">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <h2 className="text-3xl md:text-5xl font-bold mb-6 font-[family-name:var(--font-outfit)]">Home Services for Homes, Rentals & Businesses</h2>
+            <p className="text-lg text-slate-400">
+              Work On Tap is designed to support different types of customers across Vancouver and Metro Vancouver.
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { icon: '01', title: 'Request Service', desc: 'Describe your job and preferred schedule in minutes.' },
-              { icon: '02', title: 'Instant Match', desc: 'We pair you with the best-rated pros in your local area.' },
-              { icon: '03', title: 'Professional Fix', desc: 'Your pro arrives equipped and ready to handle the job.' },
-              { icon: '04', title: 'Seamless Pay', desc: 'Secure digital payment and job history saved for later.' },
-            ].map((step, i) => (
-              <div key={i} className="group relative">
-                <div className="bg-slate-50 rounded-[2rem] p-10 h-full border border-slate-100 hover:border-emerald-200 hover:shadow-2xl hover:shadow-emerald-500/5 transition-all duration-500 group-hover:-translate-y-2">
-                  <div className="text-5xl font-black text-slate-200 group-hover:text-emerald-100 transition-colors mb-6 font-[family-name:var(--font-outfit)]">{step.icon}</div>
-                  <h3 className="text-2xl font-bold text-slate-900 mb-4">{step.title}</h3>
-                  <p className="text-slate-600 leading-relaxed">{step.desc}</p>
-                </div>
-                {i < 3 && (
-                  <div className="hidden lg:block absolute top-1/2 -right-4 w-8 h-px bg-slate-200 z-10"></div>
-                )}
+              { icon: '🏠', title: 'For Homeowners', desc: 'Get help with cleaning, repairs, installations, furniture assembly, moving and everyday home maintenance.' },
+              { icon: '🎓', title: 'For Renters & Students', desc: 'Find support for apartment moves, student moving, cleaning, furniture assembly and smaller household jobs.' },
+              { icon: '🔑', title: 'For Landlords & Property Managers', desc: 'Arrange move-in or move-out cleaning, rental property maintenance, minor repairs and other services required between tenants.' },
+              { icon: '🏢', title: 'For Businesses', desc: 'Access commercial cleaning, warehouse cleaning, commercial moving and handyman services for offices and other business properties.' }
+            ].map((card, i) => (
+              <div key={i} className="bg-slate-800 p-8 rounded-3xl border border-slate-700 hover:border-[#16A34A]/50 transition-colors">
+                <div className="text-4xl mb-4">{card.icon}</div>
+                <h3 className="text-xl font-bold mb-3">{card.title}</h3>
+                <p className="text-slate-400 text-sm leading-relaxed">{card.desc}</p>
               </div>
             ))}
           </div>
-
-          <div className="mt-20 text-center">
-            <Link href="/services" className="inline-flex items-center gap-3 bg-slate-900 text-white px-10 py-5 rounded-2xl font-bold hover:bg-slate-800 transition-all shadow-xl active:scale-95 group">
-              Start Your First Booking
-              <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
-            </Link>
-          </div>
         </div>
       </section>
 
-      {/* Asymmetrical Service Grid */}
-      <section className="py-24 bg-slate-100">
-        <div className="container mx-auto px-6 max-w-7xl">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 md:mb-16 gap-4 md:gap-6">
-            <div className="max-w-2xl">
-              <span className="text-emerald-600 font-bold tracking-widest uppercase text-xs md:text-sm mb-3 md:mb-4 block">Hot Right Now</span>
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 font-[family-name:var(--font-outfit)] leading-tight">Trending in Metro Vancouver</h2>
-            </div>
-            <Link href="/services" className="text-slate-900 text-sm md:text-base font-bold border-b-2 border-emerald-500 pb-1 hover:text-emerald-600 hover:border-emerald-600 transition-all">
-              View All Services →
-            </Link>
-          </div>
-
-          {homepageServices.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-
-              {homepageServices.slice(0, 3).map((service) => (
-                <Link
-                  key={service.id}
-                  href={`/services/${service.slug}`}
-                  className="group flex flex-col overflow-hidden rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 h-full bg-white border border-slate-100"
-                >
-                  <div className="w-full h-56 md:h-64 relative bg-slate-50  flex items-center justify-center shrink-0">
-                    {service.image_url ? (
-                      <img
-                        src={service.image_url}
-                        alt={service.name}
-                        className="w-full h-full object-contain  transition-transform duration-500"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center rounded-2xl group-hover:scale-105 transition-transform duration-500">
-                        <span className="text-6xl font-bold text-white"><Icon name={service.category_icon} /></span>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="p-6 md:p-8 flex flex-col flex-1 justify-between bg-white">
-                    <div>
-                      <div className="flex items-center flex-wrap gap-2 mb-3">
-                        {service.is_popular === 1 && (
-                          <span className="px-3 py-1 bg-amber-400 text-slate-900 text-xs font-bold rounded-full uppercase tracking-tighter">Popular</span>
-                        )}
-                        <span className="px-3 py-1 bg-emerald-50 text-emerald-700 text-xs font-medium rounded-full uppercase border border-emerald-100">Home Care</span>
-                      </div>
-                      <h3 className="text-2xl font-bold text-slate-900 group-hover:text-emerald-600 transition-colors duration-300 mb-2 leading-tight line-clamp-1">{service.name}</h3>
-                      <p className="text-slate-600 mb-4 line-clamp-2 text-sm">{service.short_description}</p>
-                    </div>
-                    <div className="flex items-center justify-between border-t border-slate-100 pt-4 mt-auto">
-                      <div>
-                        <span className="text-slate-500 text-xs block mb-0.5">Starting from</span>
-                        <span className="text-xl font-bold text-slate-900">${parseFloat(service.base_price).toFixed(0)}</span>
-                      </div>
-                      <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-colors duration-300">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-20 bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200">
-              <p className="text-slate-400 text-xl">Curating best services for you...</p>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Why Choose Us & Premium Testimonials Combined */}
+      {/* Why Choose Us & How to Request */}
       <section className="py-24 bg-white">
         <div className="container mx-auto px-6 max-w-7xl">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center mb-32">
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-start mb-32">
             <div>
-              <span className="text-emerald-600 font-bold tracking-widest uppercase text-sm mb-4 block">Our Story</span>
-              <h2 className="text-4xl md:text-6xl font-bold text-slate-900 mb-8 font-[family-name:var(--font-outfit)]">Quality you can <br /> trust, every time.</h2>
-              <p className="text-lg text-slate-600 mb-10 leading-relaxed">
-                WorkOnTap was built on a simple promise: providing reliable, high-quality home maintenance that doesn&apos;t break the bank.
-                We&apos;ve vetted thousands of pros so you don&apos;t have to.
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <span className="text-emerald-600 font-bold tracking-widest uppercase text-sm mb-4 block">Benefits</span>
+              <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-8 font-[family-name:var(--font-outfit)]">Why Choose Work On Tap?</h2>
+              
+              <div className="space-y-6">
                 {[
-                  { title: 'Vetted Pros', desc: 'Background checked and verified.' },
-                  { title: 'Flat Pricing', desc: 'No hidden fees or surprises.' },
-                  { title: 'Fast Results', desc: 'Average 10 min response time.' },
-                  { title: 'Quality Guarantee', desc: 'We stand by every job.' },
+                  { title: 'Multiple Services in One Place', desc: 'Find cleaning, moving and handyman services without searching across multiple websites.' },
+                  { title: 'Residential & Commercial Services', desc: 'Access practical services for homes, apartments, offices, rental properties, warehouses and commercial spaces.' },
+                  { title: 'Services Based on Your Actual Needs', desc: 'Choose the specific type of cleaning, moving or handyman work required instead of using a one-size-fits-all service.' },
+                  { title: 'Simple Service Discovery', desc: 'Start with the main service category, choose the service you need and provide details about your job.' },
+                  { title: 'Vancouver-Focused Home Services', desc: 'Find service options for customers across Vancouver and surrounding Metro Vancouver areas, subject to service availability.' },
                 ].map((item, i) => (
-                  <div key={i} className="flex flex-col gap-2 p-6 bg-slate-50 rounded-2xl border border-slate-100">
-                    <div className="font-bold text-slate-900">{item.title}</div>
-                    <div className="text-sm text-slate-500">{item.desc}</div>
+                  <div key={i} className="flex gap-4">
+                    <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0 mt-1">✓</div>
+                    <div>
+                      <h4 className="text-lg font-bold text-slate-900">{item.title}</h4>
+                      <p className="text-slate-600">{item.desc}</p>
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
-            <div className="relative">
-              <div className="aspect-[4/5] rounded-[3rem] overflow-hidden shadow-2xl skew-y-1">
-                <img src="/whychooseus.jpg" alt="Quality Work" className="w-full h-full object-cover" />
-              </div>
-              <div className="absolute -bottom-10 -right-10 bg-[#16A34A] text-slate-900 p-8 rounded-[2rem] shadow-xl max-w-xs hidden md:block text-white">
-                <div className="text-4xl font-black mb-2">10+</div>
-                <div className="font-bold">Service Categories</div>
-                <div className="text-sm opacity-80">Covering everything from plumbing to landscaping.</div>
+            
+            <div className="bg-slate-50 p-8 md:p-10 rounded-[3rem] border border-slate-200 shadow-xl">
+              <h3 className="text-3xl font-bold text-slate-900 mb-4 font-[family-name:var(--font-outfit)]">Make Your Service Request More Accurate</h3>
+              {/* <p className="text-slate-600 mb-8">Providing the right information from the beginning can make it easier to understand the scope of your job. Clear job details can reduce confusion and help ensure the right service is selected.</p> */}
+              
+              <div className="space-y-6">
+                <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+                  <h4 className="font-bold text-[#16A34A] mb-2 flex items-center gap-2"><span className="text-xl">🧹</span> For Cleaning Services, Mention:</h4>
+                  <ul className="list-disc pl-5 text-sm text-slate-600 space-y-1">
+                    <li>Property type and Approximate size</li>
+                    <li>Areas that need cleaning</li>
+                    <li>Current condition of the property</li>
+                    {/* <li>Type of cleaning required & Preferred date</li> */}
+                  </ul>
+                </div>
+                
+                <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+                  <h4 className="font-bold text-blue-600 mb-2 flex items-center gap-2"><span className="text-xl">📦</span> For Moving Services, Include:</h4>
+                  <ul className="list-disc pl-5 text-sm text-slate-600 space-y-1">
+                    <li>Pickup location and Destination</li>
+                    <li>Property type (Stairs or elevators)</li>
+                    <li>Larger furniture items</li>
+                    {/* <li>Preferred moving date</li> */}
+                  </ul>
+                </div>
+                
+                <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+                  <h4 className="font-bold text-amber-600 mb-2 flex items-center gap-2"><span className="text-xl">🛠️</span> For Handyman Services, Describe:</h4>
+                  <ul className="list-disc pl-5 text-sm text-slate-600 space-y-1">
+                    <li>What needs to be repaired or installed</li>
+                    <li>Where the job is located</li>
+                    <li>Approximate dimensions where relevant</li>
+                    {/* <li>Product or fixture details (Photos of the issue where helpful)</li> */}
+                  </ul>
+                </div>
               </div>
             </div>
           </div>
+          
+        </div>
+      </section>
 
+      {/* FAQs */}
+      <section className="py-24 bg-slate-50 border-t border-slate-100">
+        <div className="container mx-auto px-6 max-w-3xl">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-slate-900 font-[family-name:var(--font-outfit)]">Voices of Trust</h2>
+            <h2 className="text-3xl md:text-5xl font-bold text-slate-900 mb-4 font-[family-name:var(--font-outfit)]">Frequently Asked Questions</h2>
+            <p className="text-slate-600 text-lg">Common questions about Work On Tap services in Vancouver.</p>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {testimonials[testimonialIndex].map((t, i) => (
-              <div key={i} className="bg-slate-50 rounded-[2.5rem] p-10 border border-slate-100 relative group overflow-hidden hover:bg-white hover:shadow-2xl hover:shadow-emerald-500/10 transition-all duration-500">
-                <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
-                  <svg className="w-20 h-20 text-slate-900" fill="currentColor" viewBox="0 0 32 32"><path d="M10 8c-3.3 0-6 2.7-6 6v10h10V14H8c0-2.2 1.8-4 4-4V8zm14 0c-3.3 0-6 2.7-6 6v10h10V14h-6c0-2.2 1.8-4 4-4V8z" /></svg>
-                </div>
-                <div className="relative z-10">
-                  <div className="flex text-amber-400 mb-6">
-                    {[...Array(t.stars)].map((_, i) => (
-                      <svg key={i} className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
-                    ))}
-                  </div>
-                  <p className="text-xl text-slate-700 italic mb-8 leading-relaxed">&quot;{t.text}&quot;</p>
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-[#16A34A] flex items-center justify-center text-white font-bold ">
-                      {t.name.charAt(0)}
-                    </div>
-                    <div>
-                      <div className="font-bold text-slate-900">{t.name}</div>
-                      <div className="text-sm text-slate-500">Verified Customer</div>
-                    </div>
-                  </div>
+          
+          <div className="space-y-4">
+            {faqs.map((faq, index) => (
+              <div key={index} className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm transition-all">
+                <button 
+                  className="w-full px-6 py-5 flex items-center justify-between text-left focus:outline-none"
+                  onClick={() => setOpenFaq(openFaq === index ? null : index)}
+                >
+                  <span className="font-bold text-slate-900 text-lg">{faq.q}</span>
+                  <span className={`transform transition-transform text-slate-400 ${openFaq === index ? 'rotate-180' : ''}`}>
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                  </span>
+                </button>
+                <div 
+                  className={`px-6 transition-all duration-300 ease-in-out ${openFaq === index ? 'max-h-96 pb-6 opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}
+                >
+                  <p className="text-slate-600">{faq.a}</p>
                 </div>
               </div>
             ))}
           </div>
+        </div>
+      </section>
 
-          <div className="flex justify-center gap-3 mt-12">
-            {testimonials.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setTestimonialIndex(i)}
-                className={`h-2 transition-all duration-300 rounded-full ${testimonialIndex === i ? 'w-12 bg-emerald-500' : 'w-4 bg-slate-200 hover:bg-slate-300'}`}
-              />
-            ))}
-          </div>
+      {/* Final CTA */}
+      <section className="py-24 bg-[#16A34A] text-center px-6">
+        <div className="container mx-auto max-w-4xl relative z-10">
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 font-[family-name:var(--font-outfit)]">One Platform. Multiple Jobs. Less Hassle.</h2>
+          <p className="text-xl text-emerald-100 mb-12 leading-relaxed">
+            Cleaning the house? Planning a move? Need repairs completed?<br />
+            Work On Tap helps you find the service that matches your job without making the process unnecessarily complicated.
+          </p>
+          <Link href="/services" className="inline-flex items-center gap-3 bg-white text-[#16A34A] px-10 py-5 rounded-2xl font-bold hover:bg-slate-50 transition-all shadow-xl active:scale-95 group text-lg">
+            Explore All Services
+            <svg className="w-6 h-6 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+          </Link>
+          <p className="mt-8 text-emerald-200">Explore cleaning, moving and handyman services in Vancouver and take the next task off your list.</p>
         </div>
       </section>
 
@@ -371,24 +387,7 @@ export default function HomePage() {
           from { opacity: 0; transform: translateY(-10px); }
           to { opacity: 1; transform: translateY(0); }
         }
-        @keyframes float {
-          0% { transform: translateY(0px); }
-          50% { transform: translateY(-20px); }
-          100% { transform: translateY(0px); }
-        }
-        @keyframes bounce-slow {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-10px); }
-        }
         .animate-fadeIn { animation: fadeIn 0.8s ease-out forwards; }
-        .animate-float { animation: float 6s ease-in-out infinite; }
-        .animate-bounce-slow { animation: bounce-slow 3s ease-in-out infinite; }
-        .line-clamp-2 {
-          display: -webkit-box;
-          -webkit-line-clamp: 2;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-        }
         :global(html, body) {
           overflow-x: hidden;
         }
