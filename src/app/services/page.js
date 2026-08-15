@@ -453,6 +453,7 @@ export default function ServicesPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
                 {pagedServices.map((service, idx) => {
                   const category = categories.find(c => c.id === service.category_id);
+                  const getImageUrl = (url) => url && !url.startsWith('http') && !url.startsWith('/') ? '/uploads/' + url : url;
                   const targetUrl = (selectedLocation !== 'all' && !service.slug.includes(selectedLocation))
                     ? `/services/${service.slug}-${selectedLocation}`
                     : `/services/${service.slug}`;
@@ -466,7 +467,7 @@ export default function ServicesPage() {
                       <div className="relative aspect-video overflow-hidden bg-slate-100">
                         {service.image_url || category?.image_url ? (
                           <img
-                            src={service.image_url || category?.image_url}
+                            src={getImageUrl(service.image_url || category?.image_url)}
                             alt={service.name}
                             className="w-full h-full object-cover transition-transform duration-700"
                           />

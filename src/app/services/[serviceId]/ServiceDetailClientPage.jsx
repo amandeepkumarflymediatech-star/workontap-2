@@ -106,6 +106,8 @@ export default function ServiceDetailClientPage({ serviceId }) {
     );
   }
 
+  const getImageUrl = (url) => url && !url.startsWith('http') && !url.startsWith('/') ? '/uploads/' + url : url;
+
   return (
     <div className="min-h-screen bg-white font-sans antialiased">
       <Header />
@@ -130,7 +132,7 @@ export default function ServiceDetailClientPage({ serviceId }) {
               <div className="relative">
                 {service.image_url || service.category_image_url ? (
                   <img
-                    src={service.image_url || service.category_image_url}
+                    src={getImageUrl(service.image_url || service.category_image_url)}
                     alt={service.name}
                     className="w-full h-auto object-cover max-h-[500px]"
                   />
@@ -423,7 +425,7 @@ export default function ServiceDetailClientPage({ serviceId }) {
                 >
                   <div className="h-32 bg-gradient-to-br from-[#16A34A]/5 to-[#16A34A]/10 flex items-center justify-center">
                     {item.image_url ? (
-                      <img src={item.image_url} alt={item.name} className="w-full h-full object-contain" />
+                      <img src={getImageUrl(item.image_url)} alt={item.name} className="w-full h-full object-contain" />
                     ) : (
                       <span className="text-5xl group-hover:scale-110 transition-transform">
                         {item.category_icon || '🔧'}

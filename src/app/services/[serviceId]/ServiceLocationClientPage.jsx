@@ -70,6 +70,8 @@ export default function ServiceLocationClientPage({
     );
   }
 
+  const getImageUrl = (url) => url && !url.startsWith('http') && !url.startsWith('/') ? '/uploads/' + url : url;
+
   return (
     <div className="min-h-screen bg-white font-sans antialiased">
       <Header />
@@ -99,7 +101,7 @@ export default function ServiceLocationClientPage({
             <div className="mb-6 md:mb-8 rounded-2xl overflow-hidden shadow-sm border border-slate-100 relative bg-slate-50">
               {service.image_url || service.category_image_url ? (
                 <img
-                  src={service.image_url || service.category_image_url}
+                  src={getImageUrl(service.image_url || service.category_image_url)}
                   alt={`${service.name} in ${locationName}`}
                   className="w-full h-auto max-h-[500px] object-cover"
                 />
