@@ -128,11 +128,11 @@ export default function ServiceDetailClientPage({ serviceId }) {
           <div className="lg:col-span-2">
             <div className="mb-6 md:mb-8 rounded-2xl overflow-hidden shadow-lg border border-slate-100">
               <div className="relative">
-                {service.image_url ? (
+                {service.image_url || service.category_image_url ? (
                   <img
-                    src={service.image_url}
+                    src={service.image_url || service.category_image_url}
                     alt={service.name}
-                    className="w-full h-auto object-cover"
+                    className="w-full h-auto object-cover max-h-[500px]"
                   />
                 ) : (
                   <div className="h-56 sm:h-64 md:h-72 flex items-center justify-center bg-gradient-to-br from-[#16A34A]/5 to-[#16A34A]/10">

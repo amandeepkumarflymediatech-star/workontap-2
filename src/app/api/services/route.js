@@ -1,4 +1,5 @@
-// app/api/services/route.js - OPTIONAL IMPROVEMENT
+// app/api/services/route.js
+export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
 import { execute, query } from '@/lib/db'
 
@@ -38,6 +39,7 @@ export async function GET(request) {
         sc.name as category_name,
         sc.slug as category_slug,
         sc.icon as category_icon,
+        sc.image_url as category_image_url,
         ${locationFields}
       FROM services s
       LEFT JOIN service_categories sc ON s.category_id = sc.id

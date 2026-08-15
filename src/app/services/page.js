@@ -151,11 +151,11 @@ export default function ServicesPage() {
     setLoading(true);
     try {
       console.log('Fetching services...');
-      const servicesRes = await fetch('/api/services');
+      const servicesRes = await fetch('/api/services', { cache: 'no-store' });
       console.log('Services status:', servicesRes.status);
 
       console.log('Fetching categories...');
-      const categoriesRes = await fetch('/api/categories');
+      const categoriesRes = await fetch('/api/categories', { cache: 'no-store' });
       console.log('Categories status:', categoriesRes.status);
 
       const servicesData = await servicesRes.json();
@@ -463,12 +463,12 @@ export default function ServicesPage() {
                       href={targetUrl}
                       className="group flex flex-col bg-white  overflow-hidden border border-slate-100 shadow-sm hover:shadow-2xl hover:shadow-[#16A34A]/5 transition-all duration-500 h-full"
                     >
-                      <div className="relative aspect-[16/10] overflow-hidden bg-slate-100">
-                        {service.image_url ? (
+                      <div className="relative aspect-video overflow-hidden bg-slate-100">
+                        {service.image_url || category?.image_url ? (
                           <img
-                            src={service.image_url}
+                            src={service.image_url || category?.image_url}
                             alt={service.name}
-                            className="w-full h-full object-cover  transition-transform duration-700"
+                            className="w-full h-full object-cover transition-transform duration-700"
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#16A34A]/10 to-[#16A34A]/20">

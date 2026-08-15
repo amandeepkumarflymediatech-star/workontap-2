@@ -50,6 +50,7 @@ const tables = [
     name VARCHAR(100) NOT NULL,
     slug VARCHAR(100) UNIQUE NOT NULL,
     icon VARCHAR(255),
+    image_url VARCHAR(255),
     description TEXT,
     is_active TINYINT(1) DEFAULT 1,
     display_order INT DEFAULT 0,

@@ -97,11 +97,11 @@ export default function ServiceLocationClientPage({
 
             {/* Image Banner */}
             <div className="mb-6 md:mb-8 rounded-2xl overflow-hidden shadow-sm border border-slate-100 relative bg-slate-50">
-              {service.image_url ? (
+              {service.image_url || service.category_image_url ? (
                 <img
-                  src={service.image_url}
+                  src={service.image_url || service.category_image_url}
                   alt={`${service.name} in ${locationName}`}
-                  className="w-full h-auto max-h-[500px] object-contain"
+                  className="w-full h-auto max-h-[500px] object-cover"
                 />
               ) : (
                 <div className="aspect-[16/9] w-full flex items-center justify-center bg-gradient-to-br from-[#16A34A]/10 to-[#16A34A]/20">

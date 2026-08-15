@@ -62,9 +62,52 @@ export default function Categories() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState(null)
   const [newCategory, setNewCategory] = useState({
-    name: '', slug: '', icon: '', description: '', display_order: 0
+    name: '', slug: '', icon: '', description: '', display_order: 0, image_url: ''
   })
   const [page, setPage] = useState(1)
+  const [uploading, setUploading] = useState(false)
+  const [imagePreview, setImagePreview] = useState('')
+
+  const handleImageUpload = async (e, isEdit = false) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (file.size > 10 * 1024 * 1024) {
+      alert('File size must be less than 10MB')
+      return
+    }
+
+    const previewUrl = URL.createObjectURL(file)
+    setImagePreview(previewUrl)
+
+    const formData = new FormData()
+    formData.append('file', file)
+
+    setUploading(true)
+    try {
+      const res = await fetch('/api/upload', { method: 'POST', body: formData })
+      const data = await res.json()
+      if (data.success) {
+        if (!isEdit) setNewCategory(prev => ({ ...prev, image_url: data.url }))
+        else setSelectedCategory(prev => ({ ...prev, image_url: data.url }))
+      } else {
+        alert(data.error || 'Failed to upload image')
+        setImagePreview('')
+      }
+    } catch (error) {
+      console.error('Upload error:', error)
+      alert('Error uploading image')
+      setImagePreview('')
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  const handleImageRemove = (isEdit = false) => {
+    setImagePreview('')
+    if (!isEdit) setNewCategory(prev => ({ ...prev, image_url: '' }))
+    else setSelectedCategory(prev => ({ ...prev, image_url: '' }))
+  }
 
   useEffect(() => {
     checkAuth()
@@ -302,13 +345,13 @@ export default function Categories() {
 
       {/* Add Category Modal */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/50" onClick={() => setIsAddModalOpen(false)} />
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-y-auto">
+          <div className="absolute inset-0 bg-black/50" onClick={() => { setIsAddModalOpen(false); setImagePreview(''); }} />
           <div className={`relative rounded-xl shadow-xl w-full max-w-lg ${isDarkMode ? 'bg-slate-900' : 'bg-white'}`}>
             <div className="p-6 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-between">
                 <h3 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Add New Category</h3>
-                <button onClick={() => setIsAddModalOpen(false)} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800">
+                <button onClick={() => { setIsAddModalOpen(false); setImagePreview(''); }} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
@@ -353,9 +396,28 @@ export default function Categories() {
                     className={`w-full px-4 py-2 rounded-lg border ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-white border-gray-300 text-gray-900'} focus:outline-none focus:ring-2 focus:ring-teal-500`}
                   />
                 </div>
+                <div>
+                  <label className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-slate-400' : 'text-gray-700'}`}>Category Image</label>
+                  {(imagePreview || newCategory.image_url) && (
+                    <img src={imagePreview || newCategory.image_url} alt="Preview" className="w-32 h-32 object-contain rounded-lg border border-gray-300 mb-3" />
+                  )}
+                  <div className="flex items-center gap-3 mb-2">
+                    <label className={`cursor-pointer px-4 py-2 rounded-lg font-medium transition-colors inline-block ${uploading ? 'opacity-50 cursor-not-allowed bg-gray-400' : isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
+                      <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, false)} disabled={uploading} className="hidden" />
+                      {uploading ? 'Uploading...' : 'Choose Image'}
+                    </label>
+                    {(imagePreview || newCategory.image_url) && (
+                      <button type="button" onClick={() => handleImageRemove(false)} disabled={uploading} className="px-4 py-2 rounded-lg font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                        Remove Image
+                      </button>
+                    )}
+                    {newCategory.image_url && !imagePreview && <span className="text-sm text-green-600">✓ Image uploaded</span>}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">Max 10MB. JPG, PNG, GIF, WebP</p>
+                </div>
               </div>
               <div className="p-6 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
-                <button type="button" onClick={() => setIsAddModalOpen(false)}
+                <button type="button" onClick={() => { setIsAddModalOpen(false); setImagePreview(''); }}
                   className={`px-4 py-2 rounded-lg font-medium ${isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
                   Cancel
                 </button>
@@ -370,13 +432,13 @@ export default function Categories() {
 
       {/* Edit Category Modal */}
       {isEditModalOpen && selectedCategory && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/50" onClick={() => setIsEditModalOpen(false)} />
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-y-auto">
+          <div className="absolute inset-0 bg-black/50" onClick={() => { setIsEditModalOpen(false); setImagePreview(''); }} />
           <div className={`relative rounded-xl shadow-xl w-full max-w-lg ${isDarkMode ? 'bg-slate-900' : 'bg-white'}`}>
             <div className="p-6 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-between">
                 <h3 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Edit Category</h3>
-                <button onClick={() => setIsEditModalOpen(false)} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800">
+                <button onClick={() => { setIsEditModalOpen(false); setImagePreview(''); }} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
@@ -421,9 +483,28 @@ export default function Categories() {
                     className={`w-full px-4 py-2 rounded-lg border ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-white border-gray-300 text-gray-900'} focus:outline-none focus:ring-2 focus:ring-teal-500`}
                   />
                 </div>
+                <div>
+                  <label className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-slate-400' : 'text-gray-700'}`}>Category Image</label>
+                  {(imagePreview || selectedCategory.image_url) && (
+                    <img src={imagePreview || selectedCategory.image_url} alt="Preview" className="w-32 h-32 object-contain rounded-lg border border-gray-300 mb-3" />
+                  )}
+                  <div className="flex items-center gap-3 mb-2">
+                    <label className={`cursor-pointer px-4 py-2 rounded-lg font-medium transition-colors inline-block ${uploading ? 'opacity-50 cursor-not-allowed bg-gray-400' : isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
+                      <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, true)} disabled={uploading} className="hidden" />
+                      {uploading ? 'Uploading...' : 'Change Image'}
+                    </label>
+                    {(imagePreview || selectedCategory.image_url) && (
+                      <button type="button" onClick={() => handleImageRemove(true)} disabled={uploading} className="px-4 py-2 rounded-lg font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                        Remove Image
+                      </button>
+                    )}
+                    {selectedCategory.image_url && !imagePreview && <span className="text-sm text-green-600">✓ Image uploaded</span>}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">Max 10MB. JPG, PNG, GIF, WebP</p>
+                </div>
               </div>
               <div className="p-6 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
-                <button type="button" onClick={() => setIsEditModalOpen(false)}
+                <button type="button" onClick={() => { setIsEditModalOpen(false); setImagePreview(''); }}
                   className={`px-4 py-2 rounded-lg font-medium ${isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
                   Cancel
                 </button>

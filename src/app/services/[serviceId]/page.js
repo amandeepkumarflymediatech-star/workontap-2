@@ -4,6 +4,8 @@ import ServiceLocationClientPage from './ServiceLocationClientPage';
 import ServiceDetailClientPage from './ServiceDetailClientPage';
 import { notFound } from 'next/navigation';
 
+export const dynamic = 'force-dynamic';
+
 export async function generateMetadata({ params }) {
   const resolvedParams = await params;
   const slug = resolvedParams.serviceId;
@@ -69,7 +71,7 @@ export default async function ServiceDynamicPage({ params }) {
 
   // 1. Check if it's a direct service slug
   const services = await db.query(
-    `SELECT s.*, sc.name as category_name, sc.icon as category_icon
+    `SELECT s.*, sc.name as category_name, sc.icon as category_icon, sc.image_url as category_image_url
      FROM services s
      LEFT JOIN service_categories sc ON s.category_id = sc.id
      WHERE s.slug = ? AND s.is_active = 1 LIMIT 1`,
@@ -117,7 +119,7 @@ export default async function ServiceDynamicPage({ params }) {
 
     // Re-fetch full service data since we only queried id, name, slug above
     const fullServices = await db.query(
-      `SELECT s.*, sc.name as category_name, sc.icon as category_icon
+      `SELECT s.*, sc.name as category_name, sc.icon as category_icon, sc.image_url as category_image_url
        FROM services s
        LEFT JOIN service_categories sc ON s.category_id = sc.id
        WHERE s.id = ? AND s.is_active = 1 LIMIT 1`,

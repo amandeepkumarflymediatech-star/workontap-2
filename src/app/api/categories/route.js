@@ -1,4 +1,5 @@
-// app/api/categories/route.js - FIXED
+// app/api/categories/route.js
+export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
 import { execute } from '@/lib/db'  // ✅ CHANGE: query → execute
 
@@ -26,7 +27,7 @@ export async function GET() {
 // POST create new category
 export async function POST(request) {
   try {
-    const { name, slug, icon, description, display_order } = await request.json()
+    const { name, slug, icon, description, display_order, image_url } = await request.json()
 
     if (!name || !slug) {
       return NextResponse.json(
@@ -37,8 +38,8 @@ export async function POST(request) {
 
     // ✅ execute() use karo
     const result = await execute(
-      'INSERT INTO service_categories (name, slug, icon, description, display_order) VALUES (?, ?, ?, ?, ?)',
-      [name, slug, icon || null, description || null, display_order || 0]
+      'INSERT INTO service_categories (name, slug, icon, description, display_order, image_url) VALUES (?, ?, ?, ?, ?, ?)',
+      [name, slug, icon || null, description || null, display_order || 0, image_url || null]
     )
 
     return NextResponse.json({ 
@@ -58,7 +59,7 @@ export async function POST(request) {
 // PUT update category
 export async function PUT(request) {
   try {
-    const { id, name, slug, icon, description, is_active, display_order } = await request.json()
+    const { id, name, slug, icon, description, is_active, display_order, image_url } = await request.json()
 
     if (!id) {
       return NextResponse.json(
@@ -69,8 +70,8 @@ export async function PUT(request) {
 
     // ✅ execute() use karo
     await execute(
-      'UPDATE service_categories SET name = ?, slug = ?, icon = ?, description = ?, is_active = ?, display_order = ? WHERE id = ?',
-      [name, slug, icon, description, is_active, display_order, id]
+      'UPDATE service_categories SET name = ?, slug = ?, icon = ?, description = ?, is_active = ?, display_order = ?, image_url = ? WHERE id = ?',
+      [name, slug, icon, description, is_active, display_order, image_url, id]
     )
 
     return NextResponse.json({ success: true, message: 'Category updated' })
