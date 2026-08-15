@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, ActivityIndicator, RefreshControl } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, ActivityIndicator, RefreshControl, useWindowDimensions } from 'react-native';
 import { scale, verticalScale, moderateScale } from '../utils/responsive';
+import RenderHtml from 'react-native-render-html';
 import { Ionicons } from '@expo/vector-icons';
 import { apiService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -10,6 +11,7 @@ import { API_BASE_URL } from '../config';
 const DetailsScreen = ({ navigation, route }) => {
     const { user } = useAuth();
     const insets = useSafeAreaInsets();
+    const { width } = useWindowDimensions();
     const { service, bookingId } = route.params || {};
     const [data, setData] = useState(service || null);
     const [loading, setLoading] = useState(!service);
@@ -66,6 +68,36 @@ const DetailsScreen = ({ navigation, route }) => {
 
     const isService = !!service;
 
+    const tagsStyles = {
+        p: {
+            marginTop: 0,
+            marginBottom: verticalScale(10),
+            lineHeight: moderateScale(22),
+            color: '#475569',
+            fontSize: moderateScale(15),
+        },
+        ul: {
+            marginTop: 0,
+            marginBottom: verticalScale(10),
+        },
+        ol: {
+            marginTop: 0,
+            marginBottom: verticalScale(10),
+        },
+        li: {
+            lineHeight: moderateScale(22),
+            color: '#475569',
+            fontSize: moderateScale(15),
+            marginBottom: verticalScale(4),
+        },
+        h1: { marginTop: verticalScale(15), marginBottom: verticalScale(10), color: '#0f172a', fontSize: moderateScale(22) },
+        h2: { marginTop: verticalScale(15), marginBottom: verticalScale(10), color: '#0f172a', fontSize: moderateScale(20) },
+        h3: { marginTop: verticalScale(15), marginBottom: verticalScale(8), color: '#0f172a', fontSize: moderateScale(18), textTransform: 'uppercase' },
+        h4: { marginTop: verticalScale(15), marginBottom: verticalScale(8), color: '#0f172a', fontSize: moderateScale(16), textTransform: 'uppercase' },
+        strong: { color: '#0f172a', fontWeight: 'bold' },
+        b: { color: '#0f172a', fontWeight: 'bold' },
+    };
+
     return (
         <View style={styles.container}>
             <ScrollView
@@ -119,16 +151,30 @@ const DetailsScreen = ({ navigation, route }) => {
                     <View style={styles.divider} />
 
                     <Text style={styles.sectionTitle}>Short Description</Text>
-                    <Text style={styles.description}>
-                        {data.short_description || 'No short description provided.'}
-                    </Text>
+                    {data.short_description ? (
+                        <RenderHtml
+                            contentWidth={width - moderateScale(40)}
+                            source={{ html: data.short_description }}
+                            baseStyle={styles.description}
+                            tagsStyles={tagsStyles}
+                        />
+                    ) : (
+                        <Text style={styles.description}>No short description provided.</Text>
+                    )}
 
                     <View style={styles.spacer} />
 
                     <Text style={styles.sectionTitle}>Full Description</Text>
-                    <Text style={styles.description}>
-                        {data.description || data.summary || 'No detailed description provided.'}
-                    </Text>
+                    {(data.description || data.summary) ? (
+                        <RenderHtml
+                            contentWidth={width - moderateScale(40)}
+                            source={{ html: data.description || data.summary }}
+                            baseStyle={styles.description}
+                            tagsStyles={tagsStyles}
+                        />
+                    ) : (
+                        <Text style={styles.description}>No detailed description provided.</Text>
+                    )}
 
                     {data.use_cases && (
                         <>

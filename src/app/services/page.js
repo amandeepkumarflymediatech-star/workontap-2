@@ -70,6 +70,7 @@ function Pagination({ total, page, setPage }) {
 
 const METRO_VANCOUVER_LOCATIONS = [
   { name: 'All Locations', slug: 'all' },
+  { name: 'Vancouver', slug: 'vancouver' },
   { name: 'Surrey', slug: 'surrey' },
   { name: 'Burnaby', slug: 'burnaby' },
   { name: 'Richmond', slug: 'richmond' },
@@ -92,7 +93,7 @@ const METRO_VANCOUVER_LOCATIONS = [
 export default function ServicesPage() {
   const router = useRouter();
   const [activeCategory, setActiveCategory] = useState('all');
-  const [selectedLocation, setSelectedLocation] = useState('all');
+  const [selectedLocation, setSelectedLocation] = useState('vancouver');
   const [searchTerm, setSearchTerm] = useState('');
   const [services, setServices] = useState([]);
   const [categories, setCategories] = useState([]);

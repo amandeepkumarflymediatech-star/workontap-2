@@ -20,6 +20,8 @@ import { API_BASE_URL } from '../config';
 const PRIMARY = '#115e59';
 const BG_COLOR = '#f8fafc';
 
+const stripHtml = (html) => html ? html.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&') : '';
+
 const ServicesScreen = ({ navigation, route }) => {
     const insets = useSafeAreaInsets();
     const categoryId = route?.params?.categoryId;
@@ -62,7 +64,7 @@ const ServicesScreen = ({ navigation, route }) => {
         if (!searchQuery) return services;
         return services.filter(service => 
             service.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            service.description?.toLowerCase().includes(searchQuery.toLowerCase())
+            (service.description && stripHtml(service.description).toLowerCase().includes(searchQuery.toLowerCase()))
         );
     }, [services, searchQuery]);
 
@@ -86,7 +88,7 @@ const ServicesScreen = ({ navigation, route }) => {
             </View>
             <View style={styles.info}>
                 <Text style={styles.name} numberOfLines={1}>{item.name}</Text>
-                <Text style={styles.description} numberOfLines={2}>{item.description}</Text>
+                <Text style={styles.description} numberOfLines={2}>{stripHtml(item.description)}</Text>
                 <View style={styles.cardFooter}>
                     <Text style={styles.price}>${item.base_price || item.price || '0.00'}</Text>
                     <View style={styles.arrowCircle}>
