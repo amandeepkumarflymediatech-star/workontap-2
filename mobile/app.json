@@ -15,7 +15,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.nhaman.workontap",
-      "buildNumber": "6",
+      "buildNumber": "7",
       "infoPlist": {
         "UIBackgroundModes": [
           "remote-notification"
@@ -24,7 +24,7 @@
       }
     },
     "android": {
-      "versionCode": 23,
+      "versionCode": 24,
       "adaptiveIcon": {
         "backgroundColor": "#115E59",
         "foregroundImage": "./assets/adaptive-icon.png"
