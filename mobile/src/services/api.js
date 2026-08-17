@@ -31,7 +31,7 @@ const processQueue = (error, token = null) => {
 
 const request = async (endpoint, options = {}) => {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 8000);
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
 
     try {
         const { params, token, ...fetchOptions } = options;
