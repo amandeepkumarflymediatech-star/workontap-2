@@ -307,12 +307,11 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Why Choose Us & How to Request */}
+      {/* Why Choose Us */}
       <section className="py-24 bg-white">
         <div className="container mx-auto px-6 max-w-7xl">
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-start mb-32">
-            <div>
+          <div className="flex flex-col lg:flex-row items-center gap-16">
+            <div className="flex-1">
               <span className="text-emerald-600 font-bold tracking-widest uppercase text-sm mb-4 block">Benefits</span>
               <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-8 font-[family-name:var(--font-outfit)]">Why Choose Work On Tap?</h2>
 
@@ -335,51 +334,64 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="bg-slate-50 p-8 md:p-10 rounded-[3rem] border border-slate-200 shadow-xl">
-              <h3 className="text-3xl font-bold text-slate-900 mb-4 font-[family-name:var(--font-outfit)]">Make Your Service Request More Accurate</h3>
-              <p className="text-slate-600 mb-8">Providing the right information from the beginning can make it easier to understand the scope of your job. Clear job details can reduce confusion and help ensure the right service is selected.</p>
-
-              <div className="space-y-6">
-                <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
-                  <h4 className="font-bold text-[#16A34A] mb-2 flex items-center gap-2"><span className="text-xl">🧹</span> For Cleaning Services, Mention:</h4>
-                  <ul className="list-disc pl-5 text-sm text-slate-600 space-y-1">
-                    <li>Property type</li>
-                    <li>Approximate size</li>
-                    <li>Areas that need cleaning</li>
-                    <li>Current condition of the property</li>
-                    <li>Type of cleaning required</li>
-                    <li>Preferred date</li>
-                  </ul>
-                </div>
-
-                <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
-                  <h4 className="font-bold text-blue-600 mb-2 flex items-center gap-2"><span className="text-xl">📦</span> For Moving Services, Include:</h4>
-                  <ul className="list-disc pl-5 text-sm text-slate-600 space-y-1">
-                    <li>Pickup location</li>
-                    <li>Destination</li>
-                    <li>Property type</li>
-                    <li>Stairs or elevators</li>
-                    <li>Larger furniture items</li>
-                    <li>Whether you have your own truck/vehicle</li>
-                    <li>Preferred moving date</li>
-                  </ul>
-                  <p className="text-xs text-slate-500 mt-3 italic">Please note: Work On Tap's moving services are provided without a truck.</p>
-                </div>
-
-                <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
-                  <h4 className="font-bold text-amber-600 mb-2 flex items-center gap-2"><span className="text-xl">🛠️</span> For Handyman Services, Describe:</h4>
-                  <ul className="list-disc pl-5 text-sm text-slate-600 space-y-1">
-                    <li>What needs to be repaired or installed</li>
-                    <li>Where the job is located</li>
-                    <li>Approximate dimensions where relevant</li>
-                    <li>Product or fixture details</li>
-                    <li>Photos of the issue where helpful</li>
-                  </ul>
-                </div>
+            <div className="flex-1 relative w-full mt-10 lg:mt-0">
+              <div className="aspect-square md:aspect-[4/5] rounded-[3rem] overflow-hidden shadow-2xl relative z-10 bg-emerald-100 flex items-center justify-center">
+                <img src="/hero-sphere.png" alt="Why Choose Us" className="w-full h-full object-cover" />
               </div>
+              <div className="absolute -bottom-8 -left-8 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl -z-10"></div>
             </div>
           </div>
+        </div>
+      </section>
 
+      {/* How to Request */}
+      <section className="py-24 bg-slate-50 border-t border-slate-100">
+        <div className="container mx-auto px-6 max-w-7xl">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <h2 className="text-3xl md:text-5xl font-bold text-slate-900 mb-6 font-[family-name:var(--font-outfit)]">Make Your Service Request More Accurate</h2>
+            <p className="text-lg text-slate-600 leading-relaxed">
+              Providing the right information from the beginning can make it easier to understand the scope of your job. Clear job details can reduce confusion and help ensure the right service is selected.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-md">
+              <h4 className="text-xl font-bold text-[#16A34A] mb-6 flex items-center gap-3"><span className="text-3xl bg-emerald-50 p-3 rounded-2xl">🧹</span> Cleaning Services</h4>
+              <ul className="list-disc pl-5 text-slate-600 space-y-3">
+                <li>Property type</li>
+                <li>Approximate size</li>
+                <li>Areas that need cleaning</li>
+                <li>Current condition of the property</li>
+                <li>Type of cleaning required</li>
+                <li>Preferred date</li>
+              </ul>
+            </div>
+
+            <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-md">
+              <h4 className="text-xl font-bold text-blue-600 mb-6 flex items-center gap-3"><span className="text-3xl bg-blue-50 p-3 rounded-2xl">📦</span> Moving Services</h4>
+              <ul className="list-disc pl-5 text-slate-600 space-y-3">
+                <li>Pickup location</li>
+                <li>Destination</li>
+                <li>Property type</li>
+                <li>Stairs or elevators</li>
+                <li>Larger furniture items</li>
+                <li>Whether you have your own truck/vehicle</li>
+                <li>Preferred moving date</li>
+              </ul>
+              <p className="text-sm text-slate-500 mt-6 italic bg-slate-50 p-4 rounded-xl">Please note: Work On Tap's moving services are provided without a truck.</p>
+            </div>
+
+            <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-md">
+              <h4 className="text-xl font-bold text-amber-600 mb-6 flex items-center gap-3"><span className="text-3xl bg-amber-50 p-3 rounded-2xl">🛠️</span> Handyman Services</h4>
+              <ul className="list-disc pl-5 text-slate-600 space-y-3">
+                <li>What needs to be repaired or installed</li>
+                <li>Where the job is located</li>
+                <li>Approximate dimensions where relevant</li>
+                <li>Product or fixture details</li>
+                <li>Photos of the issue where helpful</li>
+              </ul>
+            </div>
+          </div>
         </div>
       </section>
 
