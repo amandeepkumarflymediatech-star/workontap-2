@@ -72,9 +72,9 @@ export default function HomePage() {
                 <span className="text-[#16A34A]">— All in One Place</span>
               </h1>
 
-              <p className="text-lg md:text-xl mb-10 max-w-xl lg:mx-0 mx-auto leading-relaxed text-slate-600">
+              <p className="text-md md:text-lg mb-8 max-w-xl lg:mx-0 mx-auto leading-relaxed text-slate-600">
                 Your home and property to-do list should not take over your day. Whether you need a cleaner, help with your next move, or someone to handle everyday repairs and installations, Work On Tap brings essential cleaning, moving and handyman services in Vancouver together in one convenient place.<br/><br/>
-                From homes and apartments to rental properties and everyday household needs, choose the service you need and get your job moving.
+                {/* From homes and apartments to rental properties and everyday household needs, choose the service you need and get your job moving. */}
               </p>
 
               <AnimatedSearchBar services={services} />
