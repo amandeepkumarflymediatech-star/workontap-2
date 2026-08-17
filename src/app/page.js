@@ -336,7 +336,7 @@ export default function HomePage() {
 
             <div className="flex-1 relative w-full mt-10 lg:mt-0">
               <div className="aspect-square md:aspect-[4/5] rounded-[3rem] overflow-hidden shadow-2xl relative z-10 bg-emerald-100 flex items-center justify-center">
-                <img src="/hero-sphere.png" alt="Why Choose Us" className="w-full h-full object-cover" />
+                <img src="/why-choose-us.jpg" alt="Why Choose Us" className="w-full h-full object-cover" />
               </div>
               <div className="absolute -bottom-8 -left-8 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl -z-10"></div>
             </div>
