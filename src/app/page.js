@@ -378,7 +378,7 @@ export default function HomePage() {
                 <li>Whether you have your own truck/vehicle</li>
                 <li>Preferred moving date</li>
               </ul>
-              <p className="text-sm text-slate-500 mt-6 italic bg-slate-50 p-4 rounded-xl">Please note: Work On Tap's moving services are provided without a truck.</p>
+              <p className="text-sm text-slate-500 mt-6 italic bg-slate-50 p-4 rounded-xl">Please note: Work On Tap&apos;s moving services are provided without a truck.</p>
             </div>
 
             <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-md">
