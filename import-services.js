@@ -32,7 +32,7 @@ async function importServices() {
           } else {
               console.log(`Missing category '${item.category_name}', creating it...`);
               try {
-                  const [result] = await db.execute(
+                  const result = await db.execute(
                       'INSERT INTO service_categories (name, slug, icon) VALUES (?, ?, ?)',
                       [item.category_name, slug, item.category_icon || 'list-outline']
                   );

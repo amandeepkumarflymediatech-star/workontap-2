@@ -31,6 +31,7 @@ pool = global.mysqlPool;
 //     const [rows] = await conn.execute('SELECT ...');
 //     ...
 //   });
+
 export async function withConnection(fn) {
   const connection = await pool.getConnection();
   try {
