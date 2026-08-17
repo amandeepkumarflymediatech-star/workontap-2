@@ -1,7 +1,7 @@
 import { moderateScale, IS_TABLET, IS_SMALL_DEVICE } from '../utils/responsive';
 
 /**
- * Standard Typography system for WorkOnTop.
+ * Standard Typography system for WorkOnTap.
  * Automatically handles font scaling based on device type.
  */
 
@@ -18,21 +18,21 @@ export const Typography = {
     h3: getFontSize(24),
     h4: getFontSize(20),
     h5: getFontSize(18),
-    
+
     // Body Text
     bodyLarge: getFontSize(16),
     body: getFontSize(14),
     bodySmall: getFontSize(13),
-    
+
     // Meta / Captions
     caption: getFontSize(12),
     tiny: getFontSize(10),
-    
+
     // Specific use cases
     buttonText: getFontSize(16),
     input: getFontSize(15),
     label: getFontSize(13),
-    
+
     // Helper to get custom size if needed
     getCustom: (size) => getFontSize(size),
 

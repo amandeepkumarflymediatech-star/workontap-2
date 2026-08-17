@@ -24,7 +24,7 @@ const OnboardingIntroScreen = ({ navigation }) => {
         if (isFocused && !hasResumed.current && !onboardingCompleted) {
             console.log('🔄 [Intro] Checking step:', currentStep);
             hasResumed.current = true;
-            
+
             if (currentStep === 1) return; // Stay on intro so they can click Get Started
             else if (currentStep === 2) navigation.navigate('DocumentUpload');
             else if (currentStep === 3) navigation.navigate('BankLink');
@@ -47,7 +47,7 @@ const OnboardingIntroScreen = ({ navigation }) => {
                     />
                     <Text style={styles.title}>Join Our Pro Network</Text>
                     <Text style={styles.subtitle}>
-                        Complete these 4 simple steps to start earning with WorkOnTop
+                        Complete these 4 simple steps to start earning with WorkOnTap
                     </Text>
                 </View>
 

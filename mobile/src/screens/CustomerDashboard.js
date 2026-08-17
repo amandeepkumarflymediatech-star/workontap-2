@@ -238,10 +238,19 @@ const CustomerDashboard = ({ navigation }) => {
                                     activeOpacity={0.8}
                                 >
                                     <View style={styles.featuredImageContainer}>
-                                        <Image
-                                            source={{ uri: service.image_url?.startsWith('http') ? service.image_url : `${API_BASE_URL}${service.image_url}` }}
-                                            style={styles.featuredImage}
-                                        />
+                                        {(() => {
+                                            const imageUrl = service.image_url || service.category_image_url;
+                                            return imageUrl ? (
+                                                <Image
+                                                    source={{ uri: imageUrl.startsWith('http') ? imageUrl : `${API_BASE_URL}${imageUrl}` }}
+                                                    style={styles.featuredImage}
+                                                />
+                                            ) : (
+                                                <View style={[styles.featuredImage, { backgroundColor: '#f1f5f9', justifyContent: 'center', alignItems: 'center' }]}>
+                                                    <Ionicons name="construct-outline" size={30} color="#cbd5e1" />
+                                                </View>
+                                            );
+                                        })()}
                                         <View style={styles.priceTag}>
                                             <Text style={styles.priceTagText}>${service.base_price}</Text>
                                         </View>
@@ -554,11 +563,12 @@ const styles = StyleSheet.create({
     },
     featuredImageContainer: {
         width: '100%',
-        height: verticalScale(100),
+        aspectRatio: 16 / 9,
     },
     featuredImage: {
         width: '100%',
         height: '100%',
+        resizeMode: 'contain',
     },
     priceTag: {
         position: 'absolute',

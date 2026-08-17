@@ -67,7 +67,7 @@ const LoginScreen = ({ navigation }) => {
 
                 // Handle Redirect if guest was trying to book
                 const { redirectTo, redirectParams } = route.params || {};
-                
+
                 if (redirectTo) {
                     console.log(`🚀 [Login] Hard redirecting to ${redirectTo}`);
                     navigation.dispatch(
@@ -119,7 +119,7 @@ const LoginScreen = ({ navigation }) => {
             if (result.success) {
                 console.log(`🚀 [GoogleAuth] Success!`);
                 const userRole = result.user?.role === 'user' ? 'customer' : (result.user?.role === 'pro' ? 'provider' : result.user?.role);
-                
+
                 if (userRole === 'customer') {
                     navigation.dispatch(
                         CommonActions.reset({
@@ -196,7 +196,7 @@ const LoginScreen = ({ navigation }) => {
                             />
                         )}
                         <Text style={styles.title}>Welcome Back {role}</Text>
-                        <Text style={styles.subtitle}>Sign in to your WorkOnTop account</Text>
+                        <Text style={styles.subtitle}>Sign in to your WorkOnTap account</Text>
                     </View>
 
                     <View style={styles.form}>

@@ -10,15 +10,22 @@ const HelpSupportScreen = ({ navigation }) => {
             icon: 'mail-outline',
             title: 'Email Support',
             subtitle: 'Get help within 24 hours',
-            onPress: () => Linking.openURL('mailto:support@workonotop.com'),
+            onPress: () => Linking.openURL('mailto:info@workontap.com'),
             color: '#0ea5e9'
         },
         {
             icon: 'call-outline',
             title: 'Call Us',
             subtitle: 'Mon-Fri, 9am - 5pm',
-            onPress: () => Linking.openURL('tel:+1234567890'),
+            onPress: () => Linking.openURL('tel:+17789690777'),
             color: '#10b981'
+        },
+        {
+            icon: 'location-outline',
+            title: 'Location',
+            subtitle: 'Metro Vancouver',
+            onPress: () => Linking.openURL('https://www.google.com/maps/search/?api=1&query=Metro+Vancouver'),
+            color: '#ef4444'
         },
         {
             icon: 'chatbubbles-outline',

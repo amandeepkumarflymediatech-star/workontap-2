@@ -22,7 +22,29 @@ async function importServices() {
 
   for (const item of data) {
     try {
-      const dbCategoryId = categoryMap[item.category_name?.toLowerCase()] || item.category_id;
+      let dbCategoryId = categoryMap[item.category_name?.toLowerCase()];
+      if (!dbCategoryId && item.category_name) {
+          const slug = item.category_slug || item.category_name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+          const existing = await db.query(`SELECT id FROM service_categories WHERE slug = '${slug}'`);
+          if (existing && existing.length > 0) {
+              dbCategoryId = existing[0].id;
+              categoryMap[item.category_name.toLowerCase()] = dbCategoryId;
+          } else {
+              console.log(`Missing category '${item.category_name}', creating it...`);
+              try {
+                  const [result] = await db.execute(
+                      'INSERT INTO service_categories (name, slug, icon) VALUES (?, ?, ?)',
+                      [item.category_name, slug, item.category_icon || 'list-outline']
+                  );
+                  dbCategoryId = result.insertId;
+                  categoryMap[item.category_name.toLowerCase()] = dbCategoryId;
+              } catch (err) {
+                  console.error(`Error inserting category ${item.category_name}:`, err.message);
+              }
+          }
+      } else if (!dbCategoryId) {
+          dbCategoryId = item.category_id;
+      }
       // 1. Insert or Update into `services` table
       const serviceQuery = `
         INSERT INTO services (

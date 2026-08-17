@@ -269,13 +269,17 @@ export default function ServiceDetailClientPage({ serviceId }) {
                         <div className="text-4xl md:text-5xl font-extrabold text-[#16A34A]">
                           ${formatPrice(service.base_price)}
                         </div>
-                        <div className="text-sm text-gray-600 mt-2">For the first appointment</div>
+                        {service.duration_minutes > 0 && (
+                          <div className="text-sm text-gray-600 mt-2">
+                            Includes the first {service.duration_minutes / 60} {service.duration_minutes / 60 === 1 ? 'hour' : 'hours'} ({service.duration_minutes} mins)
+                          </div>
+                        )}
                         {service.additional_price > 0 && (
                           <>
                             <div className="border-t border-[#16A34A]/20 my-3"></div>
                             <div className="flex justify-between items-center">
                               <span className="text-gray-700">Additional</span>
-                              <span className="font-bold text-[#16A34A]">+${formatPrice(service.additional_price)}</span>
+                              <span className="font-bold text-[#16A34A]">+${formatPrice(service.additional_price)} <span className="text-sm font-normal text-gray-600">/ hr</span></span>
                             </div>
                           </>
                         )}

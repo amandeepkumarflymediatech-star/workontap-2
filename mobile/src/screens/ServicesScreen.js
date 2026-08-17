@@ -62,42 +62,46 @@ const ServicesScreen = ({ navigation, route }) => {
 
     const filteredServices = useMemo(() => {
         if (!searchQuery) return services;
-        return services.filter(service => 
+        return services.filter(service =>
             service.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             (service.description && stripHtml(service.description).toLowerCase().includes(searchQuery.toLowerCase()))
         );
     }, [services, searchQuery]);
 
-    const renderItem = ({ item }) => (
-        <TouchableOpacity 
-            style={styles.card}
-            activeOpacity={0.8}
-            onPress={() => navigation.navigate('Details', { service: item })}
-        >
-            <View style={styles.imageContainer}>
-                {item.image_url ? (
-                    <Image 
-                        source={{ uri: item.image_url.startsWith('http') ? item.image_url : `${API_BASE_URL}${item.image_url}` }} 
-                        style={styles.image} 
-                    />
-                ) : (
-                    <View style={styles.placeholderImage}>
-                        <Ionicons name="construct-outline" size={30} color="#cbd5e1" />
-                    </View>
-                )}
-            </View>
-            <View style={styles.info}>
-                <Text style={styles.name} numberOfLines={1}>{item.name}</Text>
-                <Text style={styles.description} numberOfLines={2}>{stripHtml(item.description)}</Text>
-                <View style={styles.cardFooter}>
-                    <Text style={styles.price}>${item.base_price || item.price || '0.00'}</Text>
-                    <View style={styles.arrowCircle}>
-                        <Ionicons name="chevron-forward" size={16} color="#fff" />
+    const renderItem = ({ item }) => {
+        const imageUrl = item.image_url || item.category_image_url;
+
+        return (
+            <TouchableOpacity
+                style={styles.card}
+                activeOpacity={0.8}
+                onPress={() => navigation.navigate('Details', { service: item })}
+            >
+                <View style={styles.imageContainer}>
+                    {imageUrl ? (
+                        <Image
+                            source={{ uri: imageUrl.startsWith('http') ? imageUrl : `${API_BASE_URL}${imageUrl}` }}
+                            style={styles.image}
+                        />
+                    ) : (
+                        <View style={styles.placeholderImage}>
+                            <Ionicons name="construct-outline" size={30} color="#cbd5e1" />
+                        </View>
+                    )}
+                </View>
+                <View style={styles.info}>
+                    <Text style={styles.name} numberOfLines={1}>{item.name}</Text>
+                    <Text style={styles.description} numberOfLines={2}>{stripHtml(item.description)}</Text>
+                    <View style={styles.cardFooter}>
+                        <Text style={styles.price}>${item.base_price || item.price || '0.00'}</Text>
+                        <View style={styles.arrowCircle}>
+                            <Ionicons name="chevron-forward" size={16} color="#fff" />
+                        </View>
                     </View>
                 </View>
-            </View>
-        </TouchableOpacity>
-    );
+            </TouchableOpacity>
+        );
+    };
 
     const renderHeader = () => (
         <View style={[styles.header, { paddingTop: insets.top + moderateScale(5) }]}>
@@ -114,7 +118,7 @@ const ServicesScreen = ({ navigation, route }) => {
                 <Text style={styles.headerTitle}>
                     {categoryId ? 'Category Services' : 'Our Services'}
                 </Text>
-                <View style={{ width: moderateScale(40) }} /> 
+                <View style={{ width: moderateScale(40) }} />
             </View>
 
             <View style={styles.searchBar}>
@@ -148,7 +152,7 @@ const ServicesScreen = ({ navigation, route }) => {
         <View style={styles.container}>
             <StatusBar barStyle="light-content" />
             {renderHeader()}
-            
+
             {error ? (
                 <View style={styles.centered}>
                     <Ionicons name="alert-circle-outline" size={60} color="#ef4444" />
@@ -186,7 +190,7 @@ const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: BG_COLOR },
     centered: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
     loadingText: { marginTop: 15, color: '#64748b', fontSize: 16 },
-    
+
     /* Header Styles */
     header: {
         backgroundColor: PRIMARY,
@@ -251,28 +255,28 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#f1f5f9',
     },
-    imageContainer: { padding: 10 },
-    image: { width: 100, height: 110, borderRadius: 15 },
-    placeholderImage: { 
-        width: 100, 
-        height: 110, 
-        borderRadius: 15, 
-        backgroundColor: '#f8fafc', 
-        justifyContent: 'center', 
-        alignItems: 'center' 
+    imageContainer: { padding: 10, justifyContent: 'center' },
+    image: { width: 100, aspectRatio: 16 / 9, borderRadius: 15, resizeMode: 'contain' },
+    placeholderImage: {
+        width: 100,
+        aspectRatio: 16 / 9,
+        borderRadius: 15,
+        backgroundColor: '#f8fafc',
+        justifyContent: 'center',
+        alignItems: 'center'
     },
     info: { flex: 1, padding: 15, justifyContent: 'space-between' },
     name: { fontSize: 18, fontWeight: 'bold', color: '#0f172a' },
     description: { fontSize: 13, color: '#64748b', marginTop: 4, lineHeight: 18 },
     cardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 },
     price: { fontSize: 18, fontWeight: 'bold', color: PRIMARY },
-    arrowCircle: { 
-        width: 28, 
-        height: 28, 
-        borderRadius: 14, 
-        backgroundColor: PRIMARY, 
-        justifyContent: 'center', 
-        alignItems: 'center' 
+    arrowCircle: {
+        width: 28,
+        height: 28,
+        borderRadius: 14,
+        backgroundColor: PRIMARY,
+        justifyContent: 'center',
+        alignItems: 'center'
     },
 
     /* Misc */

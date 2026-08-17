@@ -44,7 +44,7 @@ export default function Footer() {
               <Image src="/logo.png" alt="Logo" width={220} height={70} className="object-contain" />
             </Link>
             <p className="text-[15px] text-gray-500 leading-offset-relaxed mb-8 max-w-md">
-              WorkOnTop connects you with skilled and trusted local tradespeople for every job, big or small. Our mission is to provide dependable service, fair pricing, and complete customer satisfaction. Whatever your repair, upgrade, or service need may be, we deliver solutions that are quick, easy, and handled with professionalism.
+              WorkOnTap connects you with skilled and trusted local tradespeople for every job, big or small. Our mission is to provide dependable service, fair pricing, and complete customer satisfaction. Whatever your repair, upgrade, or service need may be, we deliver solutions that are quick, easy, and handled with professionalism.
             </p>
             <div className="flex items-center gap-4">
 
@@ -143,7 +143,18 @@ export default function Footer() {
                 </div>
                 <div className="pt-1">
                   <p className="font-semibold text-gray-800 mb-1">Email Us</p>
-                  <p>infoWorkOnTop@gmail.com</p>
+                  <p>info@workontap.com</p>
+                </div>
+              </li>
+              <li className="flex items-start gap-3 text-sm text-gray-500 group">
+                <div className="w-8 h-8 bg-green-50 text-green-600 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-green-600 group-hover:text-white transition-colors duration-300">
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                  </svg>
+                </div>
+                <div className="pt-1">
+                  <p className="font-semibold text-gray-800 mb-1">Call Us</p>
+                  <p>778-969-0777</p>
                 </div>
               </li>
               <li className="flex items-start gap-3 text-sm text-gray-500 group">
@@ -154,7 +165,7 @@ export default function Footer() {
                 </div>
                 <div className="pt-1">
                   <p className="font-semibold text-gray-800 mb-1">Our Location</p>
-                  <p>Canada</p>
+                  <p>Metro Vancouver, BC, Canada</p>
                 </div>
               </li>
             </ul>
@@ -162,7 +173,7 @@ export default function Footer() {
             {/* Map */}
             <div className="rounded-2xl overflow-hidden border border-gray-200 h-40 w-full shadow-inner lg:max-w-md">
               <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d43063249.440171145!2d-135.61748256832774!3d48.79387538349063!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4b0d03d337cc6ad9%3A0x9968b72aa2438fa5!2sCanada!5e0!3m2!1sen!2sus!4v1785309801978!5m2!1sen!2sus"
+                src="https://maps.google.com/maps?q=Metro%20Vancouver&t=&z=10&ie=UTF8&iwloc=&output=embed"
                 width="100%"
                 height="100%"
                 style={{ border: 0 }}
@@ -186,7 +197,7 @@ export default function Footer() {
             </div> */}
             <div className="space-y-1">
               <h4 className="text-xl md:text-2xl font-bold text-gray-900 tracking-tight">Download our apps</h4>
-              <p className="text-gray-500 text-sm md:text-base max-w-sm">Experience the best of WorkOnTop on your mobile device. Manage your services anywhere, anytime.</p>
+              <p className="text-gray-500 text-sm md:text-base max-w-sm">Experience the best of WorkOnTap on your mobile device. Manage your services anywhere, anytime.</p>
             </div>
           </div>
 
@@ -219,7 +230,7 @@ export default function Footer() {
       {/* Copyright Bar */}
       <div className="py-6 border-t border-gray-200 bg-white">
         <div className="container mx-auto px-6 max-w-7xl flex flex-col md:flex-row items-center justify-between gap-4 text-sm font-medium text-gray-500 text-center md:text-left">
-          <p>© Copyrights {currentYear} | All Rights Reserved By <span className="text-gray-900 font-bold">WorkOnTop</span></p>
+          <p>© Copyrights {currentYear} | All Rights Reserved By <span className="text-gray-900 font-bold">WorkOnTap</span></p>
           <p>
             Website Design and Develop by <a href="https://flymediatech.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700 transition-colors">Flymedia Technology</a>
           </p>

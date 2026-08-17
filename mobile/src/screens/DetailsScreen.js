@@ -106,20 +106,23 @@ const DetailsScreen = ({ navigation, route }) => {
                     bookingId ? <RefreshControl refreshing={refreshing} onRefresh={onRefresh} color="#115e59" /> : null
                 }
             >
-                {(data.image_url || data.service_image) ? (
-                    <Image
-                        source={{
-                            uri: (data.image_url || data.service_image).startsWith('http')
-                                ? (data.image_url || data.service_image)
-                                : `${API_BASE_URL}${data.image_url || data.service_image}`
-                        }}
-                        style={styles.imageConfig}
-                    />
-                ) : (
-                    <View style={styles.imagePlaceholder}>
-                        <Ionicons name="construct-outline" size={moderateScale(60)} color="#cbd5e1" />
-                    </View>
-                )}
+                {(() => {
+                    const imageUrl = data.image_url || data.service_image || data.category_image_url;
+                    return imageUrl ? (
+                        <Image
+                            source={{
+                                uri: imageUrl.startsWith('http')
+                                    ? imageUrl
+                                    : `${API_BASE_URL}${imageUrl}`
+                            }}
+                            style={styles.imageConfig}
+                        />
+                    ) : (
+                        <View style={styles.imagePlaceholder}>
+                            <Ionicons name="construct-outline" size={moderateScale(60)} color="#cbd5e1" />
+                        </View>
+                    );
+                })()}
 
                 <View style={styles.content}>
                     <View style={styles.headerRow}>
@@ -132,20 +135,21 @@ const DetailsScreen = ({ navigation, route }) => {
                     </View>
 
                     <View style={styles.priceRow}>
-                        <View>
-                            <Text style={styles.priceLabel}>Base Price</Text>
+                        <View style={{ flex: 1 }}>
+                            <Text style={styles.priceLabel}>Starting at</Text>
                             <Text style={styles.price}>${data.base_price || data.price || '0.00'}</Text>
+                            {data.duration_minutes > 0 && (
+                                <Text style={{ color: '#64748b', fontSize: moderateScale(11), marginTop: verticalScale(4) }}>
+                                    Includes the first {data.duration_minutes / 60} {data.duration_minutes / 60 === 1 ? 'hour' : 'hours'} ({data.duration_minutes} mins)
+                                </Text>
+                            )}
                         </View>
                         {data.additional_price > 0 && (
                             <View style={styles.priceDivider}>
                                 <Text style={styles.priceLabel}>Additional</Text>
-                                <Text style={styles.price}>+${data.additional_price}</Text>
+                                <Text style={styles.price}>+${data.additional_price} <Text style={{ fontSize: moderateScale(12), color: '#64748b', fontWeight: 'normal' }}>/ hr</Text></Text>
                             </View>
                         )}
-                        <View style={styles.priceDivider}>
-                            <Text style={styles.priceLabel}>Duration</Text>
-                            <Text style={styles.metaValue}>{data.duration_minutes || 'Flexible'} min</Text>
-                        </View>
                     </View>
 
                     <View style={styles.divider} />
@@ -237,8 +241,8 @@ const styles = StyleSheet.create({
     },
     imageConfig: {
         width: '100%',
-        height: verticalScale(250),
-        resizeMode: 'cover',
+        aspectRatio: 16 / 9,
+        resizeMode: 'contain',
     },
     imagePlaceholder: {
         width: '100%',
