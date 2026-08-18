@@ -955,7 +955,7 @@ export default function Users() {
                   </div>
                 </div>
                 <div className="flex gap-1.5 sm:gap-2 flex-shrink-0">
-                  <button onClick={openEditProvider} className="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs font-medium bg-blue-500 text-white hover:opacity-90 transition">Edit</button>
+                  <button onClick={() => openEditProvider()} className="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs font-medium bg-blue-500 text-white hover:opacity-90 transition">Edit</button>
                   <button onClick={() => deleteProvider(selectedProvider.id)} className="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs font-medium bg-red-500 text-white hover:opacity-90 transition">Del</button>
                   <button onClick={() => setIsProviderDetailsOpen(false)} className={`p-1.5 sm:p-2 rounded-lg ${isDarkMode ? 'hover:bg-slate-800' : 'hover:bg-gray-100'}`}>
                     <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
