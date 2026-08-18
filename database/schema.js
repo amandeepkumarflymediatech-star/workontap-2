@@ -111,6 +111,7 @@ const tables = [
   `CREATE TABLE IF NOT EXISTS services (
     id INT PRIMARY KEY AUTO_INCREMENT,
     category_id INT NOT NULL,
+    skills JSON,
     name VARCHAR(200) NOT NULL,
     slug VARCHAR(200) UNIQUE NOT NULL,
     description TEXT,
@@ -648,6 +649,9 @@ const alterations = [
   
   // Service Areas
   { table: 'service_areas', column: 'cities', sql: 'ALTER TABLE service_areas ADD COLUMN cities JSON AFTER is_active' },
+  
+  // Services
+  { table: 'services', column: 'skills', sql: 'ALTER TABLE services ADD COLUMN skills JSON AFTER category_id' },
   
   // users table additions
   { table: 'users', column: 'image_url', sql: 'ALTER TABLE users ADD COLUMN image_url VARCHAR(255) AFTER role' },

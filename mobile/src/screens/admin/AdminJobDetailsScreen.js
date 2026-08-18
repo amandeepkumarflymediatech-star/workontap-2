@@ -15,7 +15,7 @@ const AdminJobDetailsScreen = ({ navigation, route }) => {
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [updating, setUpdating] = useState(false);
-    
+
     // Commission & Assignment states
     const [commissionValue, setCommissionValue] = useState('');
     const [isEditingCommission, setIsEditingCommission] = useState(false);
@@ -218,12 +218,12 @@ const AdminJobDetailsScreen = ({ navigation, route }) => {
     const overtimeEarnings = parseFloat(currentBooking.overtime_earnings || 0);
     const overtimeRate = parseFloat(currentBooking.additional_price || 0);
     const commissionPercent = currentBooking.commission_percent || 0;
-    
+
     // Explicit platform fee from DB, else calculate
-    const platformFee = currentBooking.platform_amount != null 
-        ? parseFloat(currentBooking.platform_amount) 
+    const platformFee = currentBooking.platform_amount != null
+        ? parseFloat(currentBooking.platform_amount)
         : servicePrice * (commissionPercent / 100);
-        
+
     const providerBase = currentBooking.provider_amount || (servicePrice - (servicePrice * (commissionPercent / 100)));
     const providerTotal = parseFloat(currentBooking.final_provider_amount || (providerBase + overtimeEarnings));
     const authorizedAmount = parseFloat(currentBooking.authorized_amount || servicePrice);
@@ -245,10 +245,10 @@ const AdminJobDetailsScreen = ({ navigation, route }) => {
     return (
         <View style={[styles.container, { paddingTop: insets.top }]}>
             <StatusBar barStyle="dark-content" />
-            
+
             <View style={styles.header}>
-                <TouchableOpacity 
-                    onPress={() => navigation.goBack()} 
+                <TouchableOpacity
+                    onPress={() => navigation.goBack()}
                     style={styles.headerAction}
                     hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
                 >
@@ -258,7 +258,7 @@ const AdminJobDetailsScreen = ({ navigation, route }) => {
                     <Text style={styles.headerTitle}>Booking Details</Text>
                     <Text style={styles.headerSubtitle}>#{currentBooking.booking_number || currentBooking.id}</Text>
                 </View>
-                <TouchableOpacity 
+                <TouchableOpacity
                     onPress={() => navigation.navigate('Chat', {
                         bookingId: currentBooking.id,
                         bookingNumber: currentBooking.booking_number || currentBooking.id,
@@ -272,8 +272,8 @@ const AdminJobDetailsScreen = ({ navigation, route }) => {
                 </TouchableOpacity>
             </View>
 
-            <ScrollView 
-                showsVerticalScrollIndicator={false} 
+            <ScrollView
+                showsVerticalScrollIndicator={false}
                 contentContainerStyle={styles.scrollContent}
                 refreshControl={
                     <RefreshControl refreshing={refreshing} onRefresh={onRefresh} color="#0d9488" />
@@ -345,7 +345,7 @@ const AdminJobDetailsScreen = ({ navigation, route }) => {
                                     />
                                     <Text style={styles.percentSymbol}>%</Text>
                                 </View>
-                                <TouchableOpacity 
+                                <TouchableOpacity
                                     style={[styles.saveBtn, (!commissionValue || savingCommission) && styles.disabledBtn]}
                                     onPress={handleSaveCommission}
                                     disabled={!commissionValue || savingCommission}
@@ -380,7 +380,7 @@ const AdminJobDetailsScreen = ({ navigation, route }) => {
                     ) : (
                         <View style={styles.unassignedBox}>
                             <Text style={styles.unassignedHint}>Job is currently unassigned.</Text>
-                            <TouchableOpacity 
+                            <TouchableOpacity
                                 style={[styles.assignBtnWide, currentBooking.commission_percent === null && styles.disabledBtn]}
                                 onPress={() => setAssignModalVisible(true)}
                                 disabled={currentBooking.commission_percent === null}
@@ -527,7 +527,7 @@ const AdminJobDetailsScreen = ({ navigation, route }) => {
                             <Text style={styles.totalFinVal}>{formatCurrency(providerTotal)}</Text>
                         </View>
                         <View style={{ alignItems: 'flex-end' }}>
-                            <Text style={styles.totalFinLabel}>Customer Charged</Text>
+                            <Text style={styles.totalFinLabel}> customer authorized</Text>
                             <Text style={[styles.totalFinVal, { color: '#1e293b' }]}>{formatCurrency(authorizedAmount)}</Text>
                         </View>
                     </View>
@@ -581,7 +581,7 @@ const AdminJobDetailsScreen = ({ navigation, route }) => {
                             data={tradespeople}
                             keyExtractor={(p) => p.id.toString()}
                             renderItem={({ item }) => (
-                                <TouchableOpacity 
+                                <TouchableOpacity
                                     style={[styles.providerItem, selectedProvider === item.id && styles.selectedProviderItem]}
                                     onPress={() => setSelectedProvider(item.id)}
                                 >
@@ -598,7 +598,7 @@ const AdminJobDetailsScreen = ({ navigation, route }) => {
                             ListEmptyComponent={<Text style={styles.emptyText}>No active providers found.</Text>}
                             style={{ maxHeight: 400 }}
                         />
-                        <TouchableOpacity 
+                        <TouchableOpacity
                             style={[styles.confirmAssignBtn, (!selectedProvider || updating) && styles.disabledBtn]}
                             onPress={handleAssignProvider}
                             disabled={!selectedProvider || updating}
@@ -616,14 +616,16 @@ const AdminJobDetailsScreen = ({ navigation, route }) => {
                         <Ionicons name="close" size={32} color="#fff" />
                     </TouchableOpacity>
                     {selectedImage && (
-                    <Image 
-                        source={{ uri: (() => {
-                            const raw = selectedImage.url || selectedImage;
-                            return raw?.startsWith('http') ? raw : `${API_BASE_URL}${raw}`;
-                        })() }} 
-                        style={styles.viewerImg} 
-                        resizeMode="contain" 
-                    />)}
+                        <Image
+                            source={{
+                                uri: (() => {
+                                    const raw = selectedImage.url || selectedImage;
+                                    return raw?.startsWith('http') ? raw : `${API_BASE_URL}${raw}`;
+                                })()
+                            }}
+                            style={styles.viewerImg}
+                            resizeMode="contain"
+                        />)}
                 </View>
             </Modal>
         </View>
@@ -685,8 +687,8 @@ const PhotoGrid = ({ label, photos, onOpen }) => {
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#f8fafc' },
     header: {
-        flexDirection: 'row', 
-        alignItems: 'center', 
+        flexDirection: 'row',
+        alignItems: 'center',
         justifyContent: 'space-between',
         paddingHorizontal: 16,
         height: 50,
@@ -771,12 +773,12 @@ const styles = StyleSheet.create({
     lockedCommissionBox: { gap: 12 },
     commissionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
     commissionMainVal: { fontSize: 28, fontWeight: '900', color: '#059669' },
-    lockedBadge: { 
-        flexDirection: 'row', 
-        alignItems: 'center', 
-        backgroundColor: '#ecfdf5', 
-        paddingHorizontal: 10, 
-        paddingVertical: 4, 
+    lockedBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#ecfdf5',
+        paddingHorizontal: 10,
+        paddingVertical: 4,
         borderRadius: 12,
         borderWidth: 1,
         borderColor: '#d1fae5'
@@ -803,13 +805,13 @@ const styles = StyleSheet.create({
         color: '#1e293b'
     },
     percentSymbol: { position: 'absolute', right: 16, top: 14, fontSize: 16, fontWeight: '700', color: '#94a3b8' },
-    saveBtn: { 
-        width: 80, 
-        height: 50, 
-        backgroundColor: '#0d9488', 
-        borderRadius: 12, 
-        alignItems: 'center', 
-        justifyContent: 'center' 
+    saveBtn: {
+        width: 80,
+        height: 50,
+        backgroundColor: '#0d9488',
+        borderRadius: 12,
+        alignItems: 'center',
+        justifyContent: 'center'
     },
     saveBtnText: { color: '#fff', fontWeight: '800', fontSize: 14 },
     disabledBtn: { opacity: 0.5 },

@@ -84,16 +84,27 @@ export async function GET(request) {
     const services = await query(sql, params)
     console.log(`Found ${services.length} services`);
 
-    if ((id || slug) && services.length === 1) {
+    // Parse skills JSON for each service
+    const formattedServices = services.map(s => {
+      let parsedSkills = []
+      try {
+        parsedSkills = typeof s.skills === 'string' ? JSON.parse(s.skills) : (s.skills || [])
+      } catch (e) {
+        parsedSkills = []
+      }
+      return { ...s, skills: parsedSkills }
+    })
+
+    if ((id || slug) && formattedServices.length === 1) {
       return NextResponse.json({
         success: true,
-        data: services[0]
+        data: formattedServices[0]
       })
     }
 
     return NextResponse.json({
       success: true,
-      data: services
+      data: formattedServices
     })
   } catch (error) {
     console.error('CRITICAL ERROR in GET /api/services:', error)
@@ -120,7 +131,8 @@ export async function POST(request) {
       use_cases,
       is_homepage,
       is_trending,
-      is_popular
+      is_popular,
+      skills
     } = await request.json()
 
     if (!category_id || !name || !slug || !base_price) {
@@ -135,8 +147,8 @@ export async function POST(request) {
       `INSERT INTO services 
        (category_id, name, slug, description, short_description, base_price, 
         additional_price, duration_minutes, image_url, use_cases,
-        is_homepage, is_trending, is_popular) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        is_homepage, is_trending, is_popular, skills) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         category_id,
         name,
@@ -150,7 +162,8 @@ export async function POST(request) {
         use_cases || null,
         is_homepage ? 1 : 0,
         is_trending ? 1 : 0,
-        is_popular ? 1 : 0
+        is_popular ? 1 : 0,
+        JSON.stringify(Array.isArray(skills) ? skills : [])
       ]
     )
 
@@ -188,7 +201,8 @@ export async function PUT(request) {
       is_homepage,
       is_trending,
       is_popular,
-      is_active
+      is_active,
+      skills
     } = await request.json()
 
     if (!id) {
@@ -202,7 +216,7 @@ export async function PUT(request) {
       `UPDATE services 
        SET category_id = ?, name = ?, slug = ?, description = ?, short_description = ?, 
            base_price = ?, additional_price = ?, duration_minutes = ?, image_url = ?, 
-           use_cases = ?, is_homepage = ?, is_trending = ?, is_popular = ?, is_active = ?
+           use_cases = ?, is_homepage = ?, is_trending = ?, is_popular = ?, is_active = ?, skills = ?
        WHERE id = ?`,
       [
         category_id,
@@ -219,6 +233,7 @@ export async function PUT(request) {
         is_trending ? 1 : 0,
         is_popular ? 1 : 0,
         is_active ? 1 : 0,
+        JSON.stringify(Array.isArray(skills) ? skills : []),
         id
       ]
     )

@@ -27,6 +27,9 @@ export async function GET(request) {
     WHERE b.status = 'awaiting_approval'
       AND b.updated_at < DATE_SUB(NOW(), INTERVAL 24 HOUR)
       AND b.payment_intent_id IS NOT NULL
+      AND NOT EXISTS (
+        SELECT 1 FROM disputes d WHERE d.booking_id = b.id AND d.status IN ('open', 'reviewing')
+      )
   `)
 
   console.log(`Auto-release: Found ${expiredBookings.length} expired bookings`)

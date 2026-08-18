@@ -232,6 +232,7 @@ export default function Users() {
       city: providerToEdit.city || '', 
       status: providerToEdit.status || 'pending' 
     })
+    setIsProviderDetailsOpen(false)
     setIsEditProviderOpen(true)
   }
 

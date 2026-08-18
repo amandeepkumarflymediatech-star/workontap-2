@@ -31,10 +31,16 @@ const TimeTracker = ({
                 setJobData(res.data);
                 const status = res.data.job_timer_status || 'not_started';
                 setTimerStatus(status);
-                if (res.data.start_time && status === 'running') {
-                    setStartTime(res.data.start_time);
-                    const elapsed = Math.floor((Date.now() - new Date(res.data.start_time).getTime()) / 1000);
-                    setElapsedTime(elapsed);
+                
+                if (status === 'running' || status === 'paused') {
+                    const accumulatedSeconds = res.data.accumulated_seconds || 0;
+                    setElapsedTime(accumulatedSeconds);
+                    
+                    if (status === 'running') {
+                        // Shift startTime backwards by the accumulated seconds so the interval calculates correctly
+                        const shiftedStartTime = new Date(Date.now() - (accumulatedSeconds * 1000)).toISOString();
+                        setStartTime(shiftedStartTime);
+                    }
                 }
             }
         } catch (err) {
@@ -204,7 +210,7 @@ const TimeTracker = ({
                     <View style={styles.runningActions}>
                         <TouchableOpacity style={[styles.btn, styles.pauseBtn]} onPress={() => handleAction('pause')} disabled={loading}>
                             <Ionicons name="pause" size={20} color="#fff" />
-                            <Text style={styles.btnText}>Pause</Text>
+                            <Text style={styles.btnText}>Pause / End Shift</Text>
                         </TouchableOpacity>
                         <TouchableOpacity style={[styles.btn, styles.stopBtn]} onPress={() => handleAction('stop')} disabled={loading}>
                             <Ionicons name="checkmark-done" size={20} color="#fff" />

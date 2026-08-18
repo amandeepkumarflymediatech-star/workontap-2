@@ -31,6 +31,7 @@ export async function GET(request, { params }) {
         b.*,
         s.name as service_full_name,
         s.duration_minutes,
+        s.skills as required_skills,
         c.name as category_name,
         d.reason as dispute_reason,
         (SELECT COUNT(*) FROM job_photos WHERE booking_id = b.id AND photo_type = 'before') > 0 as has_before_photos,

@@ -245,6 +245,15 @@ export async function POST(request) {
       // Run completely in the background so it doesn't block the API response
       (async () => {
         try {
+          let serviceSkills = [];
+          if (service_id) {
+            const serviceRows = await execute('SELECT skills FROM services WHERE id = ?', [service_id]);
+            if (serviceRows.length > 0) {
+              const rawSkills = serviceRows[0].skills;
+              try { serviceSkills = typeof rawSkills === 'string' ? JSON.parse(rawSkills) : (rawSkills || []); } catch(e){}
+            }
+          }
+
           const providers = await execute(
             `SELECT id, phone, service_areas, skills FROM service_providers WHERE status = 'active'`
           );
@@ -256,13 +265,19 @@ export async function POST(request) {
             try { areas = typeof p.service_areas === 'string' ? JSON.parse(p.service_areas) : p.service_areas; } catch (e) {}
             if (!areas || !Array.isArray(areas) || !areas.includes(jobCluster)) return false;
             
-            // Check if provider has matching skill (fuzzy match with service name for now)
-            let skills = [];
-            try { skills = typeof p.skills === 'string' ? JSON.parse(p.skills) : p.skills; } catch (e) {}
-            if (!skills || !Array.isArray(skills) || skills.length === 0) return false;
+            // Check if provider has matching skill
+            let pSkills = [];
+            try { pSkills = typeof p.skills === 'string' ? JSON.parse(p.skills) : p.skills; } catch (e) {}
+            if (!pSkills || !Array.isArray(pSkills) || pSkills.length === 0) return false;
             
-            const serviceNameLower = (service_name || '').toLowerCase();
-            return skills.some(skill => serviceNameLower.includes(skill.toLowerCase()) || skill.toLowerCase().includes(serviceNameLower));
+            if (serviceSkills && serviceSkills.length > 0) {
+              // Intersection: provider must have at least one skill required by the service
+              return pSkills.some(ps => serviceSkills.includes(ps));
+            } else {
+              // Fallback for services that don't have skills assigned yet
+              const serviceNameLower = (service_name || '').toLowerCase();
+              return pSkills.some(skill => serviceNameLower.includes(skill.toLowerCase()) || skill.toLowerCase().includes(serviceNameLower));
+            }
           });
 
           console.log(`[API Bookings] Blasting to ${matchedProviders.length} providers for cluster ${jobCluster}`);

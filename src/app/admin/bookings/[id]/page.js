@@ -319,7 +319,7 @@ export default function BookingDetailsPage({ params }) {
                   <span className="text-sm font-bold text-green-600">${fmt(booking.final_provider_amount || booking.provider_amount || booking.service_price)}</span>
                 </div>
                 <div className={`pt-2 border-t ${divCls} flex justify-between`}>
-                  <span className={`text-sm font-semibold ${val}`}>Customer Charged</span>
+                  <span className={`text-sm font-semibold ${val}`}> customer authorized</span>
                   <span className={`text-sm font-bold ${val}`}>${fmt(booking.authorized_amount || booking.service_price)}</span>
                 </div>
               </div>
@@ -337,10 +337,10 @@ export default function BookingDetailsPage({ params }) {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field
                 label="Job Dates"
-                value={booking.job_date 
-                  ? (booking.job_date.includes(',') 
-                      ? booking.job_date.split(',').map(d => new Date(d.trim()).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })).join(' • ')
-                      : new Date(booking.job_date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }))
+                value={booking.job_date
+                  ? (booking.job_date.includes(',')
+                    ? booking.job_date.split(',').map(d => new Date(d.trim()).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })).join(' • ')
+                    : new Date(booking.job_date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }))
                   : '—'}
                 lbl={lbl} val={val}
               />
