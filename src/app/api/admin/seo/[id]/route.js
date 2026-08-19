@@ -3,13 +3,13 @@ import db from '@/lib/db';
 
 export async function GET(request, { params }) {
   try {
-    const id = params.id;
+    const { id } = await params;
     const rows = await db.query('SELECT * FROM seo_settings WHERE id = ?', [id]);
-    
+
     if (!rows || rows.length === 0) {
       return NextResponse.json({ success: false, message: 'SEO setting not found' }, { status: 404 });
     }
-    
+
     return NextResponse.json({ success: true, data: rows[0] });
   } catch (error) {
     console.error('Error fetching seo setting:', error);
@@ -19,7 +19,7 @@ export async function GET(request, { params }) {
 
 export async function PUT(request, { params }) {
   try {
-    const id = params.id;
+    const { id } = await params;
     const body = await request.json();
     const { page_name, meta_title, meta_description, keywords, canonical_url, og_title, og_description, og_image, header_scripts, footer_scripts } = body;
 
@@ -46,7 +46,7 @@ export async function PUT(request, { params }) {
 
 export async function DELETE(request, { params }) {
   try {
-    const id = params.id;
+    const { id } = await params;
     await db.query('DELETE FROM seo_settings WHERE id = ?', [id]);
     return NextResponse.json({ success: true, message: 'SEO setting deleted' });
   } catch (error) {

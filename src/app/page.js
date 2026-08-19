@@ -84,7 +84,7 @@ export default function HomePage() {
             <div className="absolute inset-0 z-0 lg:relative lg:flex-1 lg:z-10 mt-12 lg:mt-0 opacity-25 lg:opacity-100 flex items-center justify-end lg:-mr-20">
               <div className="relative z-10 w-full lg:w-[115%] transition-all duration-500 group flex items-center justify-end">
                 <img
-                  src="/check1.png"
+                  src="/hero.png"
                   alt="Quality Service Guaranteed"
                   className="w-full h-auto object-contain lg:object-cover transition-transform duration-700"
                 />

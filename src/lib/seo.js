@@ -113,62 +113,62 @@ export async function getSeoForPath(rawPathname) {
   }
 
   const title = 
+    pageSeo?.meta_title ||
     serviceLocationSeo?.meta_title ||
     blogSeo?.meta_title || 
     blogSeo?.title || 
     (serviceSeo ? `${serviceSeo.name} | WorkOnTap` : null) || 
-    pageSeo?.meta_title || 
     globalSeo?.meta_title || 
     'WorkOnTap - Home Maintenance Services'
 
   const rawServiceDesc = serviceSeo?.short_description || serviceSeo?.description || null
-  const cleanServiceDesc = rawServiceDesc ? rawServiceDesc.replace(/<[^>]*>?/gm, '').slice(0, 160) : null
+  const cleanServiceDesc = rawServiceDesc ? rawServiceDesc.replace(/<[^>]*>?/gm, '').slice(0, 160) + '...' : null
 
   const description = 
+    pageSeo?.meta_description ||
     serviceLocationSeo?.meta_description ||
     blogSeo?.meta_description || 
-    cleanServiceDesc || 
-    pageSeo?.meta_description || 
+    blogSeo?.short_content || 
+    cleanServiceDesc ||
     globalSeo?.meta_description || 
     'Book trusted local pros for your home maintenance needs'
 
   const keywords = 
+    pageSeo?.keywords ||
     serviceLocationSeo?.keywords ||
     blogSeo?.keywords || 
-    (serviceSeo ? `${serviceSeo.name}, home service, workontap` : null) || 
-    pageSeo?.keywords || 
     globalSeo?.keywords || 
     'home maintenance, plumbers, electricians, hvac, cleaners'
 
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://workontap.com'
   const canonical = 
+    pageSeo?.canonical_url ||
     serviceLocationSeo?.canonical_url ||
-    blogSeo?.canonical_url || 
-    pageSeo?.canonical_url || 
     globalSeo?.canonical_url || 
-    `${baseUrl}${pathname}`
+    `https://workontap.com${pathname === '/' ? '' : pathname}`
 
   const robots = 
-    blogSeo?.meta_robots || 
-    pageSeo?.meta_robots || 
-    globalSeo?.meta_robots || 
+    pageSeo?.robots ||
+    globalSeo?.robots || 
     'index, follow'
 
   const ogTitle = 
+    pageSeo?.og_title ||
+    serviceLocationSeo?.og_title ||
     blogSeo?.og_title || 
-    pageSeo?.og_title || 
     title
 
   const ogDescription = 
+    pageSeo?.og_description ||
+    serviceLocationSeo?.og_description ||
     blogSeo?.og_description || 
-    pageSeo?.og_description || 
     description
 
   let ogImage = 
-    blogSeo?.og_image || 
+    pageSeo?.og_image ||
+    serviceLocationSeo?.og_image ||
     blogSeo?.image_url || 
-    serviceSeo?.image_url || 
-    pageSeo?.og_image || 
+    serviceSeo?.image_url ||
     globalSeo?.og_image || 
     null
 
