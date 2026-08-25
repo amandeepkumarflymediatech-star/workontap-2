@@ -450,8 +450,8 @@ const CreateBookingScreen = ({ navigation, route }) => {
                         },
                         row: {
                             padding: 13,
-                            height: 44,
                             flexDirection: 'row',
+                            alignItems: 'center',
                         },
                         separator: {
                             height: 1,
@@ -459,7 +459,8 @@ const CreateBookingScreen = ({ navigation, route }) => {
                         },
                         description: {
                             fontSize: 14,
-                            color: '#1e293b'
+                            color: '#1e293b',
+                            flex: 1,
                         }
                     }}
                     textInputProps={{

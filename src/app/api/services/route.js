@@ -73,10 +73,20 @@ export async function GET(request) {
 
     sql += ' ORDER BY sc.display_order, s.name'
 
+    const pageParams = searchParams.get('page')
+    
     if (limitParams) {
       const parsedLimit = parseInt(limitParams)
       if (!isNaN(parsedLimit)) {
         sql += ` LIMIT ${parsedLimit}`
+        
+        if (pageParams) {
+          const parsedPage = parseInt(pageParams)
+          if (!isNaN(parsedPage) && parsedPage > 0) {
+            const offset = (parsedPage - 1) * parsedLimit
+            sql += ` OFFSET ${offset}`
+          }
+        }
       }
     }
 
