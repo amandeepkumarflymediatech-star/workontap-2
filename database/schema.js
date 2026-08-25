@@ -111,6 +111,7 @@ const tables = [
   `CREATE TABLE IF NOT EXISTS services (
     id INT PRIMARY KEY AUTO_INCREMENT,
     category_id INT NOT NULL,
+    skills JSON,
     name VARCHAR(200) NOT NULL,
     slug VARCHAR(200) UNIQUE NOT NULL,
     description TEXT,
@@ -396,6 +397,10 @@ const tables = [
     reason TEXT NOT NULL,
     status ENUM('open', 'reviewing', 'resolved', 'closed') DEFAULT 'open',
     admin_notes TEXT,
+    captured_amount DECIMAL(10,2) DEFAULT NULL,
+    provider_amount DECIMAL(10,2) DEFAULT NULL,
+    stripe_capture_id VARCHAR(255) DEFAULT NULL,
+    stripe_transfer_id VARCHAR(255) DEFAULT NULL,
     resolved_at DATETIME,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -648,6 +653,9 @@ const alterations = [
   
   // Service Areas
   { table: 'service_areas', column: 'cities', sql: 'ALTER TABLE service_areas ADD COLUMN cities JSON AFTER is_active' },
+  
+  // Services
+  { table: 'services', column: 'skills', sql: 'ALTER TABLE services ADD COLUMN skills JSON AFTER category_id' },
   
   // users table additions
   { table: 'users', column: 'image_url', sql: 'ALTER TABLE users ADD COLUMN image_url VARCHAR(255) AFTER role' },

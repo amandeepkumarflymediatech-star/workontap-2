@@ -177,6 +177,10 @@ export async function GET() {
         b.payment_status,
         b.payment_intent_id,
         b.authorized_amount,
+        b.provider_amount,
+        DATE_FORMAT(b.created_at, '%Y-%m-%d %H:%i:%s') as booking_created_at,
+        d.captured_amount,
+        d.provider_amount as resolved_provider_amount,
         CONCAT(u.first_name, ' ', u.last_name) as customer_name,
         u.email as customer_email,
         sp.name as provider_name,
@@ -214,7 +218,7 @@ export async function GET() {
 export async function PATCH(request) {
   let connection
   try {
-    const { dispute_id, status, admin_notes } = await request.json()
+    const { dispute_id, status, admin_notes, action, capture_amount, provider_amount } = await request.json()
 
     if (!dispute_id || !status) {
       return NextResponse.json({ success: false, message: 'dispute_id and status required' }, { status: 400 })
@@ -228,7 +232,8 @@ export async function PATCH(request) {
       SELECT 
         d.*,
         b.booking_number, b.service_name, b.service_price, b.authorized_amount,
-        b.payment_intent_id, b.provider_id,
+        b.payment_intent_id, b.provider_id, b.payment_status,
+        sp.stripe_account_id,
         CONCAT(u.first_name, ' ', u.last_name) as customer_name,
         u.email as customer_email,
         sp.name as provider_name,
@@ -243,6 +248,71 @@ export async function PATCH(request) {
     if (!dispute) {
       await connection.query('ROLLBACK')
       return NextResponse.json({ success: false, message: 'Dispute not found' }, { status: 404 })
+    }
+
+    if (action === 'process') {
+      const Stripe = (await import('stripe')).default
+      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2026-05-27.dahlia' })
+      
+      let stripeCaptureId = null
+      let stripeTransferId = null
+      
+      const capAmt = parseFloat(capture_amount || 0)
+      const provAmt = parseFloat(provider_amount || 0)
+      
+      if (capAmt > 0) {
+        try {
+          const cap = await stripe.paymentIntents.capture(dispute.payment_intent_id, {
+            amount_to_capture: Math.round(capAmt * 100)
+          })
+          stripeCaptureId = cap.id
+        } catch (err) {
+          await connection.query('ROLLBACK')
+          return NextResponse.json({ success: false, message: 'Stripe capture failed: ' + err.message }, { status: 400 })
+        }
+      } else {
+        try {
+          await stripe.paymentIntents.cancel(dispute.payment_intent_id)
+        } catch (err) {
+          await connection.query('ROLLBACK')
+          return NextResponse.json({ success: false, message: 'Stripe cancel failed: ' + err.message }, { status: 400 })
+        }
+      }
+      
+      if (provAmt > 0 && dispute.stripe_account_id) {
+        try {
+          const trans = await stripe.transfers.create({
+            amount: Math.round(provAmt * 100),
+            currency: process.env.STRIPE_CURRENCY || 'cad',
+            destination: dispute.stripe_account_id,
+            transfer_group: `booking_${dispute.booking_id}`
+          })
+          stripeTransferId = trans.id
+        } catch (err) {
+          console.error('Stripe transfer failed:', err)
+        }
+      }
+      
+      await connection.execute(`
+        UPDATE disputes SET
+          captured_amount = ?, provider_amount = ?, stripe_capture_id = ?, stripe_transfer_id = ?,
+          status = 'resolved', admin_notes = COALESCE(?, admin_notes), resolved_at = NOW(), updated_at = NOW()
+        WHERE id = ?
+      `, [capAmt, provAmt, stripeCaptureId, stripeTransferId, admin_notes || null, dispute_id])
+      
+      await connection.execute(
+        `UPDATE bookings SET payment_status = ?, status = 'completed', updated_at = NOW() WHERE id = ?`,
+        [capAmt > 0 ? 'paid' : 'canceled', dispute.booking_id]
+      )
+      
+      await connection.execute(
+        `INSERT INTO booking_status_history (booking_id, status, notes) VALUES (?, 'completed', ?)`,
+        [dispute.booking_id, `Dispute processed. Captured: $${capAmt}, Provider paid: $${provAmt}. Admin notes: ${admin_notes || ''}`]
+      )
+      
+      await connection.query('COMMIT')
+      connection.release()
+      return NextResponse.json({ success: true, message: 'Dispute processed successfully' })
     }
 
     // Update dispute

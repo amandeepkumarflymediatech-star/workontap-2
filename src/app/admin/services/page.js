@@ -14,6 +14,7 @@ export default function Services() {
   const { isDarkMode } = useAdminTheme()
   const [services, setServices] = useState([])
   const [categories, setCategories] = useState([])
+  const [globalSkills, setGlobalSkills] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [searchTerm, setSearchTerm] = useState('')
@@ -31,7 +32,7 @@ export default function Services() {
   const [newService, setNewService] = useState({
     category_id: '', name: '', slug: '', description: '', short_description: '',
     base_price: '', additional_price: '', duration_minutes: '', image_url: '',
-    use_cases: '', is_homepage: false, is_trending: false, is_popular: false, is_active: true
+    use_cases: '', is_homepage: false, is_trending: false, is_popular: false, is_active: true, skills: []
   })
 
   useEffect(() => {
@@ -47,6 +48,7 @@ export default function Services() {
       }
       loadServices()   // ✅ auth pass hone ke baad
       loadCategories()
+      loadSkills()
     } catch {
       router.push('/admin/login')
     }
@@ -72,6 +74,16 @@ export default function Services() {
       if (data.success) setCategories(data.data || [])
     } catch (error) {
       console.error('Error loading categories:', error)
+    }
+  }
+
+  const loadSkills = async () => {
+    try {
+      const res = await fetch('/api/admin/skills')
+      const data = await res.json()
+      if (data.success) setGlobalSkills(data.data || [])
+    } catch (error) {
+      console.error('Error loading skills:', error)
     }
   }
 
@@ -128,7 +140,7 @@ export default function Services() {
         setNewService({
           category_id: '', name: '', slug: '', description: '', short_description: '',
           base_price: '', additional_price: '', duration_minutes: '', image_url: '',
-          use_cases: '', is_homepage: false, is_trending: false, is_popular: false, is_active: true
+          use_cases: '', is_homepage: false, is_trending: false, is_popular: false, is_active: true, skills: []
         })
         loadServices()
         setCurrentPage(1)
@@ -476,6 +488,19 @@ export default function Services() {
                 <span className={`text-sm ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{formatDuration(service.duration_minutes)}</span>
               </div>
 
+              {/* Skills */}
+              {service.skills && service.skills.length > 0 && (
+                <div className="mb-4">
+                  <div className="flex flex-wrap gap-1">
+                    {service.skills.map((skill, i) => (
+                      <span key={i} className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-[#16A34A]/10 text-[#16A34A]">
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Actions */}
               <div className="flex items-center gap-2">
                 <button
@@ -597,6 +622,25 @@ export default function Services() {
                   </select>
                 </div>
                 <div>
+                  <label className={labelClass}>Which skills can do this job?</label>
+                  <div className={`mt-2 max-h-40 overflow-y-auto border rounded-xl p-3 grid grid-cols-2 gap-2 ${isDarkMode ? 'border-slate-700 bg-slate-800' : 'border-gray-200 bg-gray-50'}`}>
+                    {globalSkills.map(s => {
+                      const isChecked = newService.skills?.includes(s.name)
+                      return (
+                        <label key={s.id} className="flex items-center gap-2 cursor-pointer text-sm">
+                          <input type="checkbox" checked={isChecked} 
+                            onChange={(e) => {
+                              if (e.target.checked) setNewService({ ...newService, skills: [...(newService.skills || []), s.name] })
+                              else setNewService({ ...newService, skills: (newService.skills || []).filter(name => name !== s.name) })
+                            }} 
+                            className="rounded border-gray-300 text-[#16A34A] focus:ring-[#16A34A]" />
+                          <span className={isDarkMode ? 'text-slate-300' : 'text-gray-700'}>{s.name}</span>
+                        </label>
+                      )
+                    })}
+                  </div>
+                </div>
+                <div>
                   <label className={labelClass}>Service Name *</label>
                   <input type="text" required value={newService.name}
                     onChange={(e) => setNewService({ ...newService, name: e.target.value, slug: e.target.value.toLowerCase().trim().replace(/[\/]/g, '').replace(/[^\w\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-') })}
@@ -695,6 +739,25 @@ export default function Services() {
                     <option value="">Select a category</option>
                     {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                   </select>
+                </div>
+                <div>
+                  <label className={labelClass}>Which skills can do this job?</label>
+                  <div className={`mt-2 max-h-40 overflow-y-auto border rounded-xl p-3 grid grid-cols-2 gap-2 ${isDarkMode ? 'border-slate-700 bg-slate-800' : 'border-gray-200 bg-gray-50'}`}>
+                    {globalSkills.map(s => {
+                      const isChecked = selectedService.skills?.includes(s.name)
+                      return (
+                        <label key={s.id} className="flex items-center gap-2 cursor-pointer text-sm">
+                          <input type="checkbox" checked={isChecked} 
+                            onChange={(e) => {
+                              if (e.target.checked) setSelectedService({ ...selectedService, skills: [...(selectedService.skills || []), s.name] })
+                              else setSelectedService({ ...selectedService, skills: (selectedService.skills || []).filter(name => name !== s.name) })
+                            }} 
+                            className="rounded border-gray-300 text-[#16A34A] focus:ring-[#16A34A]" />
+                          <span className={isDarkMode ? 'text-slate-300' : 'text-gray-700'}>{s.name}</span>
+                        </label>
+                      )
+                    })}
+                  </div>
                 </div>
                 <div>
                   <label className={labelClass}>Service Name *</label>

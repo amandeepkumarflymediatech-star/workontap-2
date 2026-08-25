@@ -6,64 +6,7 @@ import { notFound } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
-export async function generateMetadata({ params }) {
-  const resolvedParams = await params;
-  const slug = resolvedParams.serviceId;
-  const path = `/services/${slug}`;
 
-  const seoData = await getSeoForPath(path);
-  
-  if (seoData && Object.keys(seoData).length > 0 && seoData.title && seoData.title !== 'WorkOnTap - Home Maintenance Services') {
-    return {
-      title: seoData.title,
-      description: seoData.description,
-      keywords: seoData.keywords,
-      alternates: {
-        canonical: seoData.canonical || `https://workontap.com${path}`,
-      },
-      openGraph: {
-        title: seoData.ogTitle || seoData.title,
-        description: seoData.ogDescription || seoData.description,
-        images: seoData.ogImage ? [{ url: seoData.ogImage }] : [],
-      },
-      robots: seoData.robots || 'index, follow',
-    };
-  }
-
-  // Try to parse if it's a location slug to give a better fallback
-  const allServices = await db.query(
-    `SELECT id, name, slug FROM services WHERE is_active = 1 ORDER BY LENGTH(slug) DESC`
-  );
-  
-  let isLocation = false;
-  let serviceName = '';
-  let locationName = '';
-
-  for (const s of allServices) {
-    if (slug.startsWith(s.slug + '-')) {
-      isLocation = true;
-      serviceName = s.name;
-      const locSlug = slug.substring(s.slug.length + 1);
-      locationName = locSlug
-        .split('-')
-        .map(w => w.charAt(0).toUpperCase() + w.slice(1))
-        .join(' ');
-      break;
-    }
-  }
-
-  if (isLocation) {
-    return {
-      title: `Best ${serviceName} Services in ${locationName}, BC | WorkOnTap`,
-      description: `Book top-rated local ${serviceName} professionals in ${locationName}, BC. Fast response, background-checked pros, transparent pricing. Book online today!`,
-    };
-  }
-
-  return {
-    title: `Book Trusted Services | WorkOnTap`,
-    description: `Book top-rated local professionals for your home maintenance needs. Fast response, transparent pricing. Book online today!`,
-  };
-}
 
 export default async function ServiceDynamicPage({ params }) {
   const resolvedParams = await params;
@@ -86,10 +29,10 @@ export default async function ServiceDynamicPage({ params }) {
   const allServices = await db.query(
     `SELECT id, name, slug FROM services WHERE is_active = 1 ORDER BY LENGTH(slug) DESC`
   );
-  
+
   let matchedService = null;
   let locationSlug = '';
-  
+
   for (const s of allServices) {
     if (slug.startsWith(s.slug + '-')) {
       matchedService = s;
@@ -107,11 +50,11 @@ export default async function ServiceDynamicPage({ params }) {
     );
 
     const serviceLocation = (locRows && locRows.length > 0) ? locRows[0] : null;
-    
+
     const locList = await db.query(
       `SELECT DISTINCT location_name, location_slug FROM service_locations WHERE is_active = 1 ORDER BY location_name ASC LIMIT 20`
     );
-    
+
     const locationName = serviceLocation?.location_name || locationSlug
       .split('-')
       .map(w => w.charAt(0).toUpperCase() + w.slice(1))
@@ -125,7 +68,7 @@ export default async function ServiceDynamicPage({ params }) {
        WHERE s.id = ? AND s.is_active = 1 LIMIT 1`,
       [matchedService.id]
     );
-    
+
     const fullMatchedService = fullServices && fullServices.length > 0 ? fullServices[0] : matchedService;
 
     return (

@@ -172,6 +172,9 @@ const JobDetailsScreen = ({ navigation, route }) => {
         ? parseFloat(job.display_amount.replace(/[^\d.-]/g, ''))
         : (parseFloat(job.display_amount ?? job.provider_amount ?? baseEarnings));
 
+    let requiredSkills = [];
+    try { requiredSkills = typeof job.required_skills === 'string' ? JSON.parse(job.required_skills) : (job.required_skills || []); } catch(e){}
+
     const handleAcceptJob = async () => {
         if (!stripeConnected) {
             Alert.alert('Stripe Not Connected', 'You need to connect your Stripe account before you can accept jobs.', [
@@ -291,9 +294,30 @@ const JobDetailsScreen = ({ navigation, route }) => {
                             </View>
                         )}
                     </View>
+
+                    {requiredSkills.length > 0 && (
+                        <View style={styles.headerSkills}>
+                            {requiredSkills.map((sk, i) => (
+                                <View key={i} style={styles.skillBadge}>
+                                    <Text style={styles.skillBadgeText}>{sk}</Text>
+                                </View>
+                            ))}
+                        </View>
+                    )}
                 </View>
 
                 <View style={styles.mainContent}>
+                    {/* Disputed Banner */}
+                    {job.status === 'disputed' && (
+                        <View style={[styles.successBanner, { backgroundColor: '#fef2f2', borderColor: '#fecaca', borderWidth: 1 }]}>
+                            <Ionicons name="warning" size={20} color="#dc2626" />
+                            <View style={{ flex: 1, marginLeft: 8 }}>
+                                <Text style={[styles.successBannerText, { color: '#991b1b', marginBottom: 4 }]}>Job Disputed</Text>
+                                <Text style={{ fontSize: 12, color: '#b91c1c' }}>The customer has opened a dispute. Your payout is temporarily frozen while our team investigates. Reason: {job.dispute_reason || 'Not specified'}</Text>
+                            </View>
+                        </View>
+                    )}
+
                     {/* Assigned Job Workflow */}
                     {['confirmed', 'in_progress', 'awaiting_approval', 'completed'].includes(job.status) && (
                         <View style={styles.workflowSection}>
@@ -663,11 +687,14 @@ const styles = StyleSheet.create({
     headerEarnings: { backgroundColor: 'rgba(255,255,255,0.15)', paddingHorizontal: 16, paddingVertical: 12, borderRadius: 20, alignItems: 'center' },
     earningsLabelTop: { fontSize: Typography.tiny, fontWeight: '900', color: '#fff' },
     earningsValueTop: { fontSize: Typography.h2, fontWeight: '900', color: '#fff' },
-    headerBadges: { flexDirection: 'row', gap: 10, marginTop: 16 },
-    hBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'rgba(255,255,255,0.1)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12 },
-    hBadgeText: { fontSize: Typography.caption, fontWeight: '600', color: '#fff' },
+    headerBadges: { flexDirection: 'row', gap: 8, flexWrap: 'wrap', marginTop: 16 },
+    hBadge: { backgroundColor: 'rgba(0,0,0,0.2)', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12, flexDirection: 'row', alignItems: 'center', gap: 4 },
+    hBadgeText: { color: '#fff', fontSize: 12, fontWeight: '600' },
+    headerSkills: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 12 },
+    skillBadge: { backgroundColor: '#15843E', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6, borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
+    skillBadgeText: { color: '#fff', fontSize: 11, fontWeight: 'bold' },
 
-    mainContent: { padding: 20 },
+    mainContent: { padding: 16, gap: 20 },
     successBanner: { backgroundColor: '#f0fdf4', padding: 16, borderRadius: 16, flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 24, borderWidth: 1, borderColor: '#dcfce7' },
     successBannerText: { fontSize: Typography.body, fontWeight: '700', color: TEAL_DARK },
 

@@ -85,13 +85,13 @@ async function importServices() {
       const seoQuery = `
         INSERT INTO seo_settings (
           page_name, meta_title, meta_description, keywords, 
-          canonical_url, og_title, og_description, og_image
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+          canonical_url, og_title, og_description, og_image, header_scripts
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON DUPLICATE KEY UPDATE
           meta_title=VALUES(meta_title), meta_description=VALUES(meta_description),
           keywords=VALUES(keywords), canonical_url=VALUES(canonical_url),
           og_title=VALUES(og_title), og_description=VALUES(og_description),
-          og_image=VALUES(og_image);
+          og_image=VALUES(og_image), header_scripts=VALUES(header_scripts);
       `;
       
       await db.execute(seoQuery, [
@@ -102,7 +102,8 @@ async function importServices() {
         item.seo_canonical_url || null,
         item.seo_og_title || null,
         item.seo_og_description || null,
-        item.seo_og_image || null
+        item.seo_og_image || null,
+        item.seo_header_scripts || null
       ]);
       insertedSeo++;
       

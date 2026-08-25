@@ -40,6 +40,8 @@ export default function AdminDisputesPage() {
   const [showMobileFilter, setShowMobileFilter] = useState(false)
   const [expandedMobileCard, setExpandedMobileCard] = useState(null)
   const [viewMode, setViewMode] = useState('auto')
+  const [captureAmount, setCaptureAmount] = useState('')
+  const [providerAmount, setProviderAmount] = useState('')
 
   useEffect(() => { loadData() }, [])
 
@@ -86,16 +88,38 @@ export default function AdminDisputesPage() {
     }
   }
 
-  const openModal = (d) => {
-    setSelected(d)
-    setAdminNotes(d.admin_notes || '')
-    setNewStatus(d.status)
-    document.body.style.overflow = 'hidden'
+  const handleProcess = async () => {
+    setSaving(true)
+    try {
+      const res = await fetch('/api/admin/disputes', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          dispute_id: selected.id,
+          status: 'resolved',
+          admin_notes: adminNotes,
+          action: 'process',
+          capture_amount: captureAmount,
+          provider_amount: providerAmount
+        })
+      })
+      const json = await res.json()
+      if (json.success) {
+        showToast('success', json.message)
+        setSelected(null); setAdminNotes(''); setNewStatus('')
+        loadData()
+      } else {
+        showToast('error', json.message)
+      }
+    } catch {
+      showToast('error', 'Failed to process dispute')
+    } finally {
+      setSaving(false)
+    }
   }
 
-  const closeModal = () => {
-    setSelected(null)
-    document.body.style.overflow = 'unset'
+  const openModal = (d) => {
+    window.open('/admin/disputes/' + d.id, '_blank')
   }
 
   const toggleMobileCard = (id) => {
@@ -454,178 +478,6 @@ export default function AdminDisputesPage() {
             </div>
           )}
         </div>
-
-        {/* Review Modal */}
-        {selected && (
-          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4">
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={closeModal} />
-
-            <div className={`relative rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg md:max-w-xl lg:max-w-2xl
-              max-h-[90vh] sm:max-h-[85vh] overflow-y-auto animate-slide-up sm:animate-fade-in
-              ${dm ? 'bg-slate-900' : 'bg-white'}`}>
-
-              {/* Modal Header */}
-              <div className="sticky top-0 z-10 bg-gradient-to-r from-red-600 to-orange-600 p-4 sm:p-5">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <h2 className="text-white font-bold text-base sm:text-lg md:text-xl">⚠️ Dispute Review</h2>
-                    <p className="text-red-100 text-xs sm:text-sm md:text-base mt-0.5 truncate">
-                      #{selected.booking_number} • {selected.service_name}
-                    </p>
-                  </div>
-                  <button onClick={closeModal} className="text-white hover:opacity-70 p-1 flex-shrink-0">
-                    <X className="w-5 h-5 sm:w-6 sm:h-6" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Modal Body */}
-              <div className="p-4 sm:p-5 md:p-6 space-y-4 sm:space-y-5">
-
-                {/* Quick Info Cards */}
-                <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                  <div className={`p-3 sm:p-4 rounded-xl ${dm ? 'bg-slate-800' : 'bg-gray-100'}`}>
-                    <p className={`text-xs ${sub} mb-1`}>Amount</p>
-                    <p className={`text-lg sm:text-xl font-bold ${dm ? 'text-green-400' : 'text-green-600'}`}>
-                      {fmt(selected.authorized_amount || selected.service_price)}
-                    </p>
-                  </div>
-                  <div className={`p-3 sm:p-4 rounded-xl ${dm ? 'bg-slate-800' : 'bg-gray-100'}`}>
-                    <p className={`text-xs ${sub} mb-1`}>Raised</p>
-                    <p className={`text-sm sm:text-base font-medium ${txt}`}>{fmtShortDate(selected.created_at)}</p>
-                  </div>
-                </div>
-
-                {/* Party Information */}
-                <div className={`grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl ${dm ? 'bg-slate-800' : 'bg-gray-100'}`}>
-                  <div>
-                    <p className={`text-xs ${sub} mb-2 flex items-center gap-1`}>
-                      <User className="w-4 h-4" /> Customer
-                    </p>
-                    <p className={`text-sm sm:text-base font-medium ${txt}`}>{selected.customer_name}</p>
-                    <p className={`text-xs sm:text-sm ${sub} break-words`}>{selected.customer_email}</p>
-                  </div>
-                  <div>
-                    <p className={`text-xs ${sub} mb-2 flex items-center gap-1`}>
-                      <Briefcase className="w-4 h-4" /> Provider
-                    </p>
-                    <p className={`text-sm sm:text-base font-medium ${txt}`}>{selected.provider_name || '—'}</p>
-                    {selected.provider_email && (
-                      <p className={`text-xs sm:text-sm ${sub} break-words`}>{selected.provider_email}</p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Dispute Reason */}
-                <div className={`border-l-4 border-l-red-500 rounded-xl p-4 sm:p-5 ${dm ? 'bg-red-500/10' : 'bg-red-50'}`}>
-                  <p className={`text-xs sm:text-sm font-bold uppercase tracking-wide mb-2 ${dm ? 'text-red-400' : 'text-red-700'}`}>
-                    Customer&apos;s Dispute Reason
-                  </p>
-                  <p className={`text-sm sm:text-base leading-relaxed ${dm ? 'text-red-300' : 'text-red-800'}`}>
-                    {selected.reason}
-                  </p>
-                </div>
-
-                {/* Previous Notes */}
-                {selected.admin_notes && (
-                  <div className={`border-l-4 border-l-blue-500 rounded-xl p-4 sm:p-5 ${dm ? 'bg-blue-500/10' : 'bg-blue-50'}`}>
-                    <p className={`text-xs sm:text-sm font-bold uppercase tracking-wide mb-2 ${dm ? 'text-blue-400' : 'text-blue-700'}`}>
-                      Previous Admin Notes
-                    </p>
-                    <p className={`text-sm sm:text-base ${dm ? 'text-blue-300' : 'text-blue-800'}`}>{selected.admin_notes}</p>
-                  </div>
-                )}
-
-                {/* Status Selection */}
-                <div>
-                  <label className={`block text-sm sm:text-base font-semibold mb-3 ${dm ? 'text-slate-300' : 'text-gray-700'}`}>
-                    Update Status
-                  </label>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
-                    {Object.entries(STATUS_CONFIG).map(([key, cfg]) => {
-                      const ss = dm ? cfg.dark : cfg.light
-                      return (
-                        <button key={key} onClick={() => setNewStatus(key)}
-                          className={`px-3 py-3 sm:py-4 rounded-xl text-xs sm:text-sm font-semibold border transition-all 
-                            flex items-center justify-center gap-2
-                            ${newStatus === key
-                              ? `${ss.color} ring-2 ring-offset-2 ${dm ? 'ring-offset-slate-900' : 'ring-offset-white'} ring-current`
-                              : dm ? 'border-slate-700 text-slate-400 hover:border-slate-600' : 'border-gray-200 text-gray-500 hover:border-gray-300'
-                            }`}>
-                          <span className={`w-2 h-2 rounded-full flex-shrink-0 
-                            ${newStatus === key ? ss.dot : dm ? 'bg-slate-600' : 'bg-gray-300'}`} />
-                          <span className="text-left">{cfg.label}</span>
-                        </button>
-                      )
-                    })}
-                  </div>
-                </div>
-
-                {/* Email Notice */}
-                {willEmail && (
-                  <div className={`flex items-start gap-3 p-4 sm:p-5 rounded-xl border
-                    ${dm ? 'bg-teal-500/10 border-teal-500/20' : 'bg-teal-50 border-teal-200'}`}>
-                    <Mail className={`w-5 h-5 flex-shrink-0 mt-0.5 ${dm ? 'text-teal-400' : 'text-teal-600'}`} />
-                    <div>
-                      <p className={`text-sm sm:text-base font-semibold ${dm ? 'text-teal-400' : 'text-teal-700'}`}>
-                        Emails will be sent automatically
-                      </p>
-                      <p className={`text-xs sm:text-sm mt-1 ${dm ? 'text-teal-500' : 'text-teal-600'}`}>
-                        {selected.customer_name} and {selected.provider_name || 'the provider'} will be notified
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {/* Admin Notes */}
-                <div>
-                  <label className={`flex items-center gap-2 text-sm sm:text-base font-semibold mb-3 ${dm ? 'text-slate-300' : 'text-gray-700'}`}>
-                    <MessageSquare className="w-4 h-4" />
-                    Admin Notes
-                    {willEmail && <span className={`text-xs font-normal ${sub}`}>(included in email)</span>}
-                  </label>
-                  <textarea
-                    value={adminNotes}
-                    onChange={e => setAdminNotes(e.target.value)}
-                    rows={4}
-                    placeholder={willEmail
-                      ? 'Explain your decision — this will be sent in the notification emails...'
-                      : 'Add internal notes about this dispute...'}
-                    className={`w-full border rounded-xl p-3 sm:p-4 text-sm sm:text-base outline-none resize-none transition-colors
-                      ${dm ? 'bg-slate-800 border-slate-700 text-white placeholder-slate-500 focus:border-slate-600'
-                        : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:border-gray-400'}`}
-                  />
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                  <button onClick={handleUpdate} disabled={saving || !newStatus}
-                    className={`flex-1 py-4 sm:py-3 rounded-xl font-bold text-sm sm:text-base transition-all 
-                      flex items-center justify-center gap-2
-                      ${saving || !newStatus ? 'opacity-50 cursor-not-allowed' : ''}
-                      ${dm ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30' : 'bg-red-500 text-white hover:bg-red-600'}`}>
-                    {saving ? (
-                      <>
-                        <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                        Saving...
-                      </>
-                    ) : (
-                      <>
-                        {willEmail && <Mail className="w-4 h-4" />}
-                        {willEmail ? 'Save & Notify' : 'Save Update'}
-                      </>
-                    )}
-                  </button>
-                  <button onClick={closeModal}
-                    className={`flex-1 py-4 sm:py-3 rounded-xl font-bold text-sm sm:text-base transition-colors
-                      ${dm ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Global Styles */}

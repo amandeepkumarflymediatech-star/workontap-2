@@ -30,18 +30,45 @@ const ServicesScreen = ({ navigation, route }) => {
     const [refreshing, setRefreshing] = useState(false);
     const [error, setError] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(true);
+    const [loadingMore, setLoadingMore] = useState(false);
 
     useEffect(() => {
-        fetchServices();
+        fetchServices(1);
     }, [categoryId]);
 
-    const fetchServices = async () => {
-        try {
+    const fetchServices = async (pageNumber = 1) => {
+        if (pageNumber > 1) {
+            setLoadingMore(true);
+        } else {
             if (!refreshing) setLoading(true);
-            const params = categoryId ? { categoryId } : {};
+        }
+
+        try {
+            const params = { limit: 25, page: pageNumber };
+            if (categoryId) params.categoryId = categoryId;
+            
             const response = await apiService.get('/api/services', params);
             if (response.success) {
-                setServices(response.data);
+                const newServices = response.data || [];
+                if (pageNumber === 1) {
+                    setServices(newServices);
+                } else {
+                    setServices(prev => {
+                        const uniqueNewServices = newServices.filter(
+                            newItem => !prev.some(prevItem => prevItem.id === newItem.id)
+                        );
+                        return [...prev, ...uniqueNewServices];
+                    });
+                }
+                
+                if (newServices.length < 25) {
+                    setHasMore(false);
+                } else {
+                    setHasMore(true);
+                }
+                setPage(pageNumber);
                 setError(null);
             } else {
                 setError('Failed to load services');
@@ -52,12 +79,19 @@ const ServicesScreen = ({ navigation, route }) => {
         } finally {
             setLoading(false);
             setRefreshing(false);
+            setLoadingMore(false);
+        }
+    };
+
+    const loadMore = () => {
+        if (!loadingMore && hasMore && !loading && !searchQuery) {
+            fetchServices(page + 1);
         }
     };
 
     const onRefresh = () => {
         setRefreshing(true);
-        fetchServices();
+        fetchServices(1);
     };
 
     const filteredServices = useMemo(() => {
@@ -90,10 +124,9 @@ const ServicesScreen = ({ navigation, route }) => {
                     )}
                 </View>
                 <View style={styles.info}>
-                    <Text style={styles.name} numberOfLines={1}>{item.name}</Text>
+                    <Text style={styles.name}>{item.name}</Text>
                     <Text style={styles.description} numberOfLines={2}>{stripHtml(item.description)}</Text>
                     <View style={styles.cardFooter}>
-                        <Text style={styles.price}>${item.base_price || item.price || '0.00'}</Text>
                         <View style={styles.arrowCircle}>
                             <Ionicons name="chevron-forward" size={16} color="#fff" />
                         </View>
@@ -168,6 +201,8 @@ const ServicesScreen = ({ navigation, route }) => {
                     keyExtractor={(item) => item.id.toString()}
                     contentContainerStyle={styles.list}
                     showsVerticalScrollIndicator={false}
+                    onEndReached={loadMore}
+                    onEndReachedThreshold={0.5}
                     refreshControl={
                         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} color={PRIMARY} />
                     }
@@ -179,7 +214,11 @@ const ServicesScreen = ({ navigation, route }) => {
                             </Text>
                         </View>
                     }
-                    ListFooterComponent={<View style={{ height: insets.bottom + verticalScale(100) }} />}
+                    ListFooterComponent={
+                        <View style={{ height: insets.bottom + verticalScale(100), paddingVertical: 20, justifyContent: 'center', alignItems: 'center' }}>
+                            {loadingMore && <ActivityIndicator size="small" color={PRIMARY} />}
+                        </View>
+                    }
                 />
             )}
         </View>
@@ -266,9 +305,9 @@ const styles = StyleSheet.create({
         alignItems: 'center'
     },
     info: { flex: 1, padding: 15, justifyContent: 'space-between' },
-    name: { fontSize: 18, fontWeight: 'bold', color: '#0f172a' },
+    name: { fontSize: 15, fontWeight: 'bold', color: '#0f172a' },
     description: { fontSize: 13, color: '#64748b', marginTop: 4, lineHeight: 18 },
-    cardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 },
+    cardFooter: { flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', marginTop: 10 },
     price: { fontSize: 18, fontWeight: 'bold', color: PRIMARY },
     arrowCircle: {
         width: 28,

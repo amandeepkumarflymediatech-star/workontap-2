@@ -452,11 +452,33 @@ export async function GET(request) {
     if (bookings.length === 0) return NextResponse.json({ success: false, message: 'Booking not found' }, { status: 404 })
 
     const logs = await execute(
-      `SELECT * FROM booking_time_logs WHERE booking_id = ? ORDER BY timestamp DESC`,
+      `SELECT * FROM booking_time_logs WHERE booking_id = ? ORDER BY timestamp ASC`,
       [booking_id]
     )
 
-    return NextResponse.json({ success: true, data: bookings[0], logs })
+    let totalSeconds = 0;
+    let lastStart = null;
+    const now = new Date();
+
+    logs.forEach(log => {
+      const logTime = new Date(log.timestamp);
+      if (log.action === 'start' || log.action === 'resume') {
+        lastStart = logTime;
+      } else if ((log.action === 'pause' || log.action === 'stop') && lastStart) {
+        totalSeconds += Math.round((logTime - lastStart) / 1000);
+        lastStart = null;
+      }
+    });
+
+    // If timer is currently running, add time elapsed since last resume
+    if (lastStart && bookings[0].job_timer_status === 'running') {
+      totalSeconds += Math.round((now - lastStart) / 1000);
+    }
+
+    const jobData = bookings[0];
+    jobData.accumulated_seconds = totalSeconds;
+
+    return NextResponse.json({ success: true, data: jobData, logs })
 
   } catch (error) {
     console.error('Error fetching timer status:', error)

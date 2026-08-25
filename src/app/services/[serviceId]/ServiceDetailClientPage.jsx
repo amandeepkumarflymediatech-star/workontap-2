@@ -427,9 +427,9 @@ export default function ServiceDetailClientPage({ serviceId }) {
                   href={`/services/${item.slug}`}
                   className="group bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl hover:shadow-[#16A34A]/5 transition-all duration-300 hover:-translate-y-1 border border-slate-100"
                 >
-                  <div className="h-32 bg-gradient-to-br from-[#16A34A]/5 to-[#16A34A]/10 flex items-center justify-center">
-                    {item.image_url ? (
-                      <img src={getImageUrl(item.image_url)} alt={item.name} className="w-full h-full object-contain" />
+                  <div className="h-32 bg-gradient-to-br from-[#16A34A]/5 to-[#16A34A]/10 flex items-center justify-center overflow-hidden">
+                    {item.image_url || item.category_image_url ? (
+                      <img src={getImageUrl(item.image_url || item.category_image_url)} alt={item.name} className="w-full h-full object-cover" />
                     ) : (
                       <span className="text-5xl group-hover:scale-110 transition-transform">
                         {item.category_icon || '🔧'}

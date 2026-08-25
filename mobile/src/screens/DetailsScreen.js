@@ -173,11 +173,11 @@ const DetailsScreen = ({ navigation, route }) => {
                         <RenderHtml
                             contentWidth={width - moderateScale(40)}
                             source={{ html: data.description || data.summary }}
-                            baseStyle={styles.description}
+                            baseStyle={{ ...styles.description, textAlign: 'justify' }}
                             tagsStyles={tagsStyles}
                         />
                     ) : (
-                        <Text style={styles.description}>No detailed description provided.</Text>
+                        <Text style={[styles.description, { textAlign: 'left' }]}>No detailed description provided.</Text>
                     )}
 
                     {data.use_cases && (
@@ -331,6 +331,7 @@ const styles = StyleSheet.create({
         fontSize: moderateScale(15),
         color: '#475569',
         lineHeight: moderateScale(22),
+        textAlign: 'justify',
     },
     useCaseContainer: {
         flexDirection: 'row',
