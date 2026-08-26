@@ -76,6 +76,25 @@ async function runAlterAndSeed() {
     await connection.query(locationTablesSQL);
     console.log('✅ Created tables: states, districts, cities (if not exist)');
 
+    // 1.5 Auto-migrate existing tables that might be missing the new columns
+    try {
+      await connection.query('ALTER TABLE states ADD COLUMN code VARCHAR(20) AFTER name');
+      console.log('✅ Migrated: Added code column to states');
+    } catch (e) {
+      if (e.code !== 'ER_DUP_FIELDNAME') {
+        // Ignore duplicate field name error, throw otherwise
+      }
+    }
+    
+    try {
+      await connection.query('ALTER TABLE cities ADD COLUMN slug VARCHAR(100) AFTER name');
+      console.log('✅ Migrated: Added slug column to cities');
+    } catch (e) {
+      if (e.code !== 'ER_DUP_FIELDNAME') {
+        // Ignore duplicate field name error, throw otherwise
+      }
+    }
+
     // 2. Insert British Columbia state & Metro Vancouver district
     await connection.query(
       `INSERT IGNORE INTO states (id, name, code, is_active) VALUES (1, 'British Columbia', 'BC', 1)`
