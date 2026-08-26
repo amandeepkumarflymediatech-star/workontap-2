@@ -5,6 +5,7 @@ import Header from '@/components/Header';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
+import DirectoryListing from '@/components/DirectoryListing';
 
 const PAGE_SIZE = 8;
 
@@ -216,7 +217,7 @@ export default function ServicesPage() {
       const cityKeywords = [
         'vancouver', 'surrey', 'burnaby', 'richmond', 'coquitlam',
         'langley', 'delta', 'maple ridge', 'new westminster',
-        'port coquitlam', 'west vancouver', 'port moody', 
+        'port coquitlam', 'west vancouver', 'port moody',
         'pitt meadows', 'white rock', 'north vancouver', 'metro vancouver'
       ];
 
@@ -233,18 +234,18 @@ export default function ServicesPage() {
         if (slug === 'metro-vancouver') return 'metro vancouver';
         return slug;
       };
-      
+
       const baseCity = getBaseCity(selectedLocation);
 
       const hasOtherLocation = cityKeywords.some(city => {
         if (city === baseCity) return false;
-        
+
         const serviceNameLower = service.name.toLowerCase();
-        
+
         if (serviceNameLower.includes(city)) {
-          if (city === 'vancouver' && 
-             (serviceNameLower.includes('north vancouver') || 
-              serviceNameLower.includes('west vancouver') || 
+          if (city === 'vancouver' &&
+            (serviceNameLower.includes('north vancouver') ||
+              serviceNameLower.includes('west vancouver') ||
               serviceNameLower.includes('metro vancouver'))) {
             return false;
           }
@@ -359,7 +360,7 @@ export default function ServicesPage() {
       </section>
 
       {/* Location Selector Bar */}
-      <section className="bg-white border-b border-slate-100 py-4">
+      {/* <section className="bg-white border-b border-slate-100 py-4">
         <div className="container mx-auto px-6 max-w-7xl">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2 text-slate-700 font-bold text-sm whitespace-nowrap">
@@ -367,7 +368,6 @@ export default function ServicesPage() {
               <span>Select Service Location:</span>
             </div>
 
-            {/* Location Dropdown & Quick Pills */}
             <div className="flex items-center gap-3 w-full sm:w-auto overflow-x-auto no-scrollbar pb-1">
               <select
                 value={selectedLocation}
@@ -398,10 +398,10 @@ export default function ServicesPage() {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Category Navigation - Horizontal Scroll on small screens */}
-      <section id="services-listing" className="sticky top-[80px] z-30 backdrop-blur-xl bg-white/80 border-b border-slate-100 py-6">
+      <section id="services-listing" className="bg-white border-b border-slate-100 py-6">
         <div className="container mx-auto px-6 max-w-7xl">
           <div className="flex flex-wrap gap-2 md:gap-3 justify-center items-center gap-3 overflow-x-auto no-scrollbar pb-1 md:justify-center">
             {filterCategories.map((category) => (
@@ -443,14 +443,15 @@ export default function ServicesPage() {
                   ? searchTerm ? `Results for "${searchTerm}"` : 'All Services'
                   : categories.find(c => c.id === parseInt(activeCategory))?.name
                 }
-                {selectedLocation !== 'all' && (
+                {/* {selectedLocation !== 'all' && (
                   <span className="text-[#16A34A] ml-2">
                     in {METRO_VANCOUVER_LOCATIONS.find(l => l.slug === selectedLocation)?.name}, BC
                   </span>
-                )}
+                )} */}
               </h2>
               <p className="text-slate-500 mt-2">
-                Showing {filteredServices.length} vetted services {selectedLocation !== 'all' ? `in ${METRO_VANCOUVER_LOCATIONS.find(l => l.slug === selectedLocation)?.name}, BC` : 'in your area'}
+                Showing {filteredServices.length} vetted services
+                {/* {selectedLocation !== 'all' ? ` in ${METRO_VANCOUVER_LOCATIONS.find(l => l.slug === selectedLocation)?.name}, BC` : ' in your area'} */}
               </p>
             </div>
           </div>
@@ -460,9 +461,10 @@ export default function ServicesPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
                 {pagedServices.map((service, idx) => {
                   const category = categories.find(c => c.id === service.category_id);
-                  const targetUrl = (selectedLocation !== 'all' && !service.slug.includes(selectedLocation))
+                  {/* const targetUrl = (selectedLocation !== 'all' && !service.slug.includes(selectedLocation))
                     ? `/services/${service.slug}-${selectedLocation}`
-                    : `/services/${service.slug}`;
+                    : `/services/${service.slug}`; */}
+                  const targetUrl = `/services/${service.slug}`;
 
                   return (
                     <Link
@@ -495,11 +497,11 @@ export default function ServicesPage() {
                             {category.name}
                           </div>
                         )}
-                        {selectedLocation !== 'all' && (
+                        {/* {selectedLocation !== 'all' && (
                           <div className="absolute top-4 left-4 bg-[#16A34A] text-white backdrop-blur-md px-3 py-1.5 rounded-full text-xs font-bold shadow-md">
                             📍 {METRO_VANCOUVER_LOCATIONS.find(l => l.slug === selectedLocation)?.name}
                           </div>
-                        )}
+                        )} */}
                       </div>
 
                       <div className="p-8 flex-1 flex flex-col">
@@ -543,6 +545,16 @@ export default function ServicesPage() {
               </button>
             </div>
           )}
+        </div>
+      </section>
+
+      {/* Directory Link Section */}
+      <section className="py-16 bg-slate-50 border-t border-slate-100">
+        <div className="container mx-auto px-6 max-w-7xl text-center">
+          <h2 className="text-3xl font-bold text-slate-900 mb-4">Looking for something specific?</h2>
+          <p className="text-slate-500 mb-12 max-w-2xl mx-auto">Browse our complete directory of all local trades and services across Canada.</p>
+
+          <DirectoryListing />
         </div>
       </section>
 

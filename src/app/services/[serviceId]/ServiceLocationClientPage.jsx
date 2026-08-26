@@ -54,6 +54,14 @@ export default function ServiceLocationClientPage({
   const headingText = serviceLocation?.custom_heading || `#1 Rated ${service?.name || 'Home'} Services in ${locationName}, BC`;
   const introText = serviceLocation?.custom_intro || `Looking for top-rated, background-checked ${service?.name?.toLowerCase() || 'home maintenance'} specialists in ${locationName}? WorkOnTap connects you with verified local pros who deliver fast, high-quality service at transparent upfront rates.`;
 
+  const dynamicShortDescription = service?.short_description
+    ? service.short_description.replace(new RegExp(service?.name, 'gi'), `${service?.name} in ${locationName}`)
+    : '';
+
+  const dynamicDescription = service?.description
+    ? service.description.replace(new RegExp(service?.name, 'gi'), `${service?.name} in ${locationName}`)
+    : '';
+
   if (!service) {
     return (
       <div className="min-h-screen bg-white font-sans">
@@ -91,11 +99,11 @@ export default function ServiceLocationClientPage({
         </div>
       </div>
 
-      <div className="container mx-auto px-6 max-w-7xl py-8 md:py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
+      <div className="container mx-auto px-6 max-w-5xl py-8 md:py-12">
+        <div className="w-full">
 
-          {/* Main Left Content Column */}
-          <div className="lg:col-span-2">
+          {/* Main Content Column */}
+          <div>
 
             {/* Image Banner */}
             <div className="mb-6 md:mb-8 rounded-2xl overflow-hidden shadow-sm border border-slate-100 relative bg-slate-50">
@@ -112,20 +120,22 @@ export default function ServiceLocationClientPage({
                   </span>
                 </div>
               )}
-              <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-md px-4 py-2 rounded-full text-xs sm:text-sm font-bold text-[#16A34A] shadow-md border border-emerald-100">
+              {/* <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-md px-4 py-2 rounded-full text-xs sm:text-sm font-bold text-[#16A34A] shadow-md border border-emerald-100">
                 📍 Serving {locationName}, BC
-              </div>
+              </div> */}
             </div>
 
-            {/* Title & Intro */}
-            {/* <div className="mb-8">
+            {/* Title & Short Description */}
+            <div className="mb-8 mt-6">
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 mb-4 leading-tight">
-                {headingText}
+                {service.name} in {locationName}
               </h1>
-              <p className="text-lg text-gray-700 leading-relaxed">
-                {introText}
-              </p>
-            </div> */}
+              {dynamicShortDescription && (
+                <p className="text-lg md:text-xl text-gray-700 leading-relaxed font-medium">
+                  {dynamicShortDescription}
+                </p>
+              )}
+            </div>
 
             {/* Why Choose Us Grid */}
             {/* <div className="mb-10 bg-slate-50 rounded-2xl p-6 border border-slate-200">
@@ -176,7 +186,7 @@ export default function ServiceLocationClientPage({
             )} */}
 
 
-            {service.description && (
+            {dynamicDescription && (
               <div className="bg-white rounded-2xl p-6 md:p-8 mb-8 border border-gray-200/80 shadow-sm hover:shadow-md transition-shadow">
                 <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center border-b border-gray-100 pb-3">
                   <span className="bg-[#16A34A] text-white w-7 h-7 rounded-full flex items-center justify-center text-sm mr-2.5 shadow-sm">📋</span>
@@ -184,14 +194,14 @@ export default function ServiceLocationClientPage({
                 </h3>
                 <div
                   className="rich-text-content text-gray-800 text-base leading-relaxed break-words"
-                  dangerouslySetInnerHTML={{ __html: service.description }}
+                  dangerouslySetInnerHTML={{ __html: dynamicDescription }}
                 />
               </div>
             )}
 
             {useCases.length > 0 && (
               <div className="mb-10">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">What We Help With in {locationName}</h2>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">What We Help With</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {useCases.map((useCase, idx) => (
                     <div key={idx} className="flex items-center gap-3 p-3.5 bg-emerald-50/60 rounded-xl border border-emerald-100 text-gray-800 font-medium text-sm">
@@ -203,7 +213,7 @@ export default function ServiceLocationClientPage({
             )}
 
             {/* Nearby Metro Vancouver Locations for Interlinking */}
-            {allLocations.length > 0 && (
+            {/* {allLocations.length > 0 && (
               <div className="mt-12 pt-8 border-t border-gray-200">
                 <h2 className="text-xl font-bold text-gray-900 mb-4">
                   {service.name} Services in Nearby Metro Vancouver Cities
@@ -223,80 +233,8 @@ export default function ServiceLocationClientPage({
                   })}
                 </div>
               </div>
-            )}
+            )} */}
 
-          </div>
-
-          {/* Right Booking Sidebar */}
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-xl sticky top-28 z-10">
-              <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-4">
-                <div>
-                  <span className="text-xs text-gray-500 font-medium uppercase tracking-wider">Starting From</span>
-                  <div className="text-3xl font-black text-gray-900">
-                    ${parseFloat(service.base_price).toFixed(2)}
-                  </div>
-                </div>
-                <div className="text-right">
-                  <span className="inline-block px-3 py-1 bg-emerald-100 text-[#16A34A] text-xs font-bold rounded-full">
-                    {locationName}, BC
-                  </span>
-                </div>
-              </div>
-
-              {/* Address Picker */}
-              <div className="mb-5">
-                <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wider">
-                  Service Location
-                </label>
-                <div className="relative">
-                  <Autocomplete
-                    apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''}
-                    onPlaceSelected={(place) => {
-                      if (place && place.formatted_address) {
-                        setSelectedAddress(place.formatted_address);
-                        setAddressError('');
-                      }
-                    }}
-                    options={{
-                      types: ['address'],
-                      componentRestrictions: { country: ['ca', 'us'] },
-                    }}
-                    defaultValue={selectedAddress}
-                    onChange={(e) => {
-                      setSelectedAddress(e.target.value);
-                      if (addressError) setAddressError('');
-                    }}
-                    placeholder={`Enter your address in ${locationName}...`}
-                    className={`w-full px-4 py-3 rounded-xl border ${addressError ? 'border-red-500' : 'border-gray-300'} text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#16A34A] focus:border-transparent transition shadow-sm`}
-                  />
-                </div>
-                {addressError && (
-                  <p className="text-xs text-red-500 mt-1 font-medium">{addressError}</p>
-                )}
-              </div>
-
-              {/* Book Button */}
-              <button
-                onClick={handleBookNow}
-                className="w-full py-3.5 px-4 bg-[#16A34A] hover:bg-[#15803D] text-white font-bold rounded-xl shadow-lg hover:shadow-emerald-200 transition-all flex items-center justify-center gap-2 mb-4"
-              >
-                <span className="text-center text-sm lg:text-base leading-tight">Book {service.name} in {locationName}</span>
-                <span className="shrink-0">→</span>
-              </button>
-
-              <div className="space-y-2.5 text-xs text-gray-600 border-t border-gray-100 pt-4">
-                <div className="flex items-center gap-2">
-                  <span className="text-[#16A34A] font-bold">✓</span> Instant Confirmation
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[#16A34A] font-bold">✓</span> Direct Contact with Verified Pro
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[#16A34A] font-bold">✓</span> Pay Securely After Job Completion
-                </div>
-              </div>
-            </div>
           </div>
 
         </div>

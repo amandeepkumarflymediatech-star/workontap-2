@@ -57,7 +57,7 @@ export default function Services() {
   const loadServices = async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/services')
+      const res = await fetch('/api/services?admin=true')
       const data = await res.json()
       if (data.success) setServices(data.data || [])
     } catch (error) {
@@ -487,6 +487,16 @@ export default function Services() {
                 </svg>
                 <span className={`text-sm ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{formatDuration(service.duration_minutes)}</span>
               </div>
+
+              {/* Locations */}
+              {service.locations && (
+                <div className="flex items-start gap-2 mb-4">
+                  <span className="text-sm">📍</span>
+                  <span className={`text-xs line-clamp-2 ${isDarkMode ? 'text-slate-400' : 'text-gray-500'}`} title={service.locations}>
+                    {service.locations}
+                  </span>
+                </div>
+              )}
 
               {/* Skills */}
               {service.skills && service.skills.length > 0 && (

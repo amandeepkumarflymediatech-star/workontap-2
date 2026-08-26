@@ -13,6 +13,7 @@ export async function GET(request) {
     const location = searchParams.get('location') || searchParams.get('locationSlug')
     const homepage = searchParams.get('homepage')
     const limitParams = searchParams.get('limit')
+    const admin = searchParams.get('admin')
 
     const locationFields = location ? `
         sl.location_name,
@@ -40,16 +41,21 @@ export async function GET(request) {
         sc.slug as category_slug,
         sc.icon as category_icon,
         sc.image_url as category_image_url,
+        (SELECT GROUP_CONCAT(location_name SEPARATOR ', ') FROM service_locations sl2 WHERE sl2.service_id = s.id) as locations,
         ${locationFields}
       FROM services s
       LEFT JOIN service_categories sc ON s.category_id = sc.id
       LEFT JOIN seo_settings seo ON seo.page_name = CONCAT('/services/', s.slug)
       ${location ? 'LEFT JOIN service_locations sl ON sl.service_id = s.id AND (sl.location_slug = ? OR LOWER(sl.location_name) = ?)' : ''}
-      WHERE s.is_active = 1
+      WHERE 1=1
     `
     const params = []
     if (location) {
       params.push(location.toLowerCase(), location.toLowerCase())
+    }
+
+    if (admin !== 'true') {
+      sql += ' AND s.is_active = 1'
     }
 
     if (id) {
