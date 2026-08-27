@@ -28,7 +28,7 @@ export async function POST(request) {
 
     try {
       const [[booking]] = await connection.execute(
-        `SELECT b.*, s.duration_minutes as standard_duration,
+        `SELECT b.*, s.duration_minutes as standard_duration, s.name as service_name,
                   u.email as customer_email, u.first_name as customer_first_name, u.phone as customer_phone,
                   TIMESTAMPDIFF(MINUTE, b.start_time, NOW()) as current_duration
          FROM bookings b
@@ -86,7 +86,18 @@ export async function POST(request) {
             }
             const tEst = (bRate + oAmount) * wCount;
             
-            const msg = `Your pro is starting. ${wCount} cleaners at $${bRate} minimum base rate for 1 hrs plus $${oRate}/hr, estimated ${eHours} hours, about $${tEst}. Final price is based on actual time.`;
+            const sName = booking.service_name || 'Service';
+              const msg = `*WorkOnTap*
+Service: ${sName}
+
+Your professional has started the job!
+• Cleaners: ${wCount}
+• Est. Time: ${eHours} hrs
+• Base Rate: ${bRate}
+• Extra Rate: ${oRate}/hr
+
+Est. Total: ~${tEst}
+(Final price based on actual time)`;
             
             // Fire and forget
             sendSMS(customerPhone, msg).catch(console.error);
