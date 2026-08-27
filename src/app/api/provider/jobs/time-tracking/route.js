@@ -91,12 +91,12 @@ export async function POST(request) {
 Service: ${sName}
 
 Your professional has started the job!
-• Cleaners: ${wCount}
-• Est. Time: ${eHours} hrs
-• Base Rate: ${bRate}
-• Extra Rate: ${oRate}/hr
+- Cleaners: ${wCount}
+- Est. Time: ${eHours} hrs
+- Base Rate: ${bRate}
+- Extra Rate: ${oRate}/hr
 
-Est. Total: ~${tEst}
+Est. Total: Est ${tEst}
 (Final price based on actual time)`;
             
             // Fire and forget
