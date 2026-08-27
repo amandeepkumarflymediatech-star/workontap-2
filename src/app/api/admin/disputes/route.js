@@ -156,7 +156,7 @@ import { NextResponse } from 'next/server'
 import { getConnection } from '@/lib/db'
 import { sendEmail } from '@/lib/email'
 
-── GET: All disputes ─────────────────────────────────────────────────────────
+//  GET: All disputes ─────────────────────────────────────────────────────────
 export async function GET() {
   let connection
   try {
@@ -214,7 +214,7 @@ export async function GET() {
   }
 }
 
-── PATCH: Update dispute status / admin notes ────────────────────────────────
+//  PATCH: Update dispute status / admin notes ────────────────────────────────
 export async function PATCH(request) {
   let connection
   try {
@@ -394,7 +394,7 @@ export async function PATCH(request) {
   }
 }
 
-── Email builder — matches your existing emailLayout style ──────────────────
+//  Email builder — matches your existing emailLayout style ──────────────────
 function buildDisputeEmail({ name, role, isResolved, bookingNumber, serviceName, amount, adminNote }) {
   const headerBg = isResolved
     ? 'linear-gradient(135deg, #15803d 0%, #16a34a 100%)'

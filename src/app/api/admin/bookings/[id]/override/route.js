@@ -4,7 +4,7 @@ import { verifyToken } from '@/lib/jwt'
 
 export async function PUT(request, { params }) {
   try {
-    const token = request.cookies.get('admin_token')?.value
+    const token = request.cookies.get('adminAuth')?.value
     if (!token) {
       return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 })
     }
