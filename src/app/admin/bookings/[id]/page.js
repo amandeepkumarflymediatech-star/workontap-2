@@ -667,8 +667,19 @@ export default function BookingDetailsPage({ params }) {
               <Field label="Service ID" value={`#${booking.service_id}`} lbl={lbl} val={val} />
               <Field label="Created" value={formatDateTime(booking.created_at)} lbl={lbl} val={val} />
               <Field label="Last Updated" value={formatDateTime(booking.updated_at)} lbl={lbl} val={val} />
+              </div>
+              {booking.status === 'completed' && (
+              <button 
+                onClick={() => {
+                  setOverrideData({ worker_count: booking.worker_count || 1, actual_duration_minutes: booking.actual_duration_minutes || 0, reason: '' });
+                  setShowOverrideModal(true);
+                }}
+                className="w-full mt-4 py-2.5 rounded-xl border border-teal-500 text-teal-600 text-sm font-semibold hover:bg-teal-50 transition"
+              >
+                ✏️ Edit Final Job Details
+              </button>
+              )}
             </div>
-          </div>
 
         </div>
       </div>
