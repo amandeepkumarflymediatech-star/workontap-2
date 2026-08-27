@@ -841,8 +841,9 @@ export async function GET(request, { params }) {
 
             <!-- Calculation note -->
             <div class="calc-note">
-              <strong>Calculation:</strong>&nbsp; $${Number(booking.service_price).toFixed(2)}/hr ÷ 60 = $${ratePerMinute.toFixed(4)}/min &times; ${invoice.actual_duration} min = <strong>$${Number(invoice.base_amount).toFixed(2)}</strong>
-            </div>
+                <strong>Calculation:</strong>&nbsp; ${booking.worker_count || 1} cleaner(s) &times; (base rate ${Number(booking.service_price).toFixed(2)} + overtime ${Number(invoice.overtime_amount || 0).toFixed(2)}) = 
+<strong>${Number(invoice.total_amount).toFixed(2)}</strong>
+              </div>
 
             <!-- Line items -->
             <table class="line-items">
