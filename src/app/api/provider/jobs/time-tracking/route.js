@@ -29,8 +29,8 @@ export async function POST(request) {
     try {
       const [[booking]] = await connection.execute(
         `SELECT b.*, s.duration_minutes as standard_duration,
-                u.email as customer_email, u.first_name as customer_first_name,
-                TIMESTAMPDIFF(MINUTE, b.start_time, NOW()) as current_duration
+                  u.email as customer_email, u.first_name as customer_first_name, u.phone as customer_phone,
+                  TIMESTAMPDIFF(MINUTE, b.start_time, NOW()) as current_duration
          FROM bookings b
          LEFT JOIN services s ON b.service_id = s.id
          LEFT JOIN users u ON b.user_id = u.id
