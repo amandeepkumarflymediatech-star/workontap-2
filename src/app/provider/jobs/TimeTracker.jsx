@@ -127,12 +127,10 @@ export default function TimeTracker({
       }
       
       if (!showStartConfirm) {
-        setShowStartConfirm(true)
-        return
+        setShowStartConfirm(true);
+        return;
       }
     }
-
-
 
     if (action === 'stop') {
       let isAfterUploaded = afterUploaded;
@@ -167,7 +165,7 @@ export default function TimeTracker({
         payload.worker_count = workerCount
         payload.estimated_hours = parseFloat(estimatedHours) || 1
       }
-      
+
       const res = await fetch('/api/provider/jobs/time-tracking', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
