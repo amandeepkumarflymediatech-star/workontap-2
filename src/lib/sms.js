@@ -11,7 +11,7 @@ export async function sendSMS(to, message) {
     // Twilio requires E.164 formatting, we'll try to ensure it starts with '+' if it's 10 digits
     let formattedTo = to.replace(/[^0-9+]/g, '');
     if (formattedTo.length === 10 && !formattedTo.startsWith('+')) {
-        formattedTo = '+1' + formattedTo;
+        formattedTo = '+91' + formattedTo; // Changed to +91 for India
     }
     
     try {
